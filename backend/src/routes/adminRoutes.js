@@ -24,6 +24,12 @@ router.post('/create-staff',
 // Lister le personnel
 router.get('/staff', protect, authorize('administrateur'), adminController.listStaff);
 
+// Mettre à jour le compte d'un membre du personnel
+router.patch('/staff/:id', protect, authorize('administrateur'), adminController.updateStaffAccount);
+
+// Supprimer un compte (personnel ou patient)
+router.delete('/accounts/:id', protect, authorize('administrateur'), adminController.deleteAccount);
+
 // Lister les patients (secrétaire + admin)
 router.get('/patients', protect, authorize('secretaire', 'administrateur'), adminController.listPatients);
 

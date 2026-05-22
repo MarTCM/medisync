@@ -48,7 +48,8 @@ export const routes: Routes = [
       { path: '', redirectTo: 'calendar', pathMatch: 'full' },
       { path: 'calendar', loadComponent: () => import('./features/practitioner/calendar/calendar.component').then(m => m.DoctorCalendarComponent) },
       { path: 'availability', loadComponent: () => import('./features/practitioner/availability/availability.component').then(m => m.DoctorAvailabilityComponent) },
-      { path: 'leaves', loadComponent: () => import('./features/practitioner/leaves/leaves.component').then(m => m.LeavesComponent) }
+      { path: 'leaves', loadComponent: () => import('./features/practitioner/leaves/leaves.component').then(m => m.LeavesComponent) },
+      { path: 'profile', loadComponent: () => import('./features/practitioner/profile/profile.component').then(m => m.DoctorProfileComponent) }
     ]
   },
 

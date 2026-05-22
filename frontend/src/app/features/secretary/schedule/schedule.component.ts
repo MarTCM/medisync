@@ -14,6 +14,7 @@ import { InvoiceService } from '../../../core/services/invoice.service';
 import { Appointment } from '../../../core/models';
 import { BookForPatientDialogComponent } from '../book-for-patient-dialog/book-for-patient-dialog.component';
 import { RescheduleDialogComponent } from '../reschedule-dialog/reschedule-dialog.component';
+import { FacturerDialogComponent, FacturerDialogResult } from '../facturer-dialog/facturer-dialog.component';
 import { toLocalDateString } from '../../../core/utils/date';
 
 @Component({
@@ -107,13 +108,19 @@ import { toLocalDateString } from '../../../core/utils/date';
               <mat-icon style="font-size:14px;margin-right:2px">cancel</mat-icon> Annuler
             </button>
             <button mat-stroked-button color="accent"
-              *ngIf="apt.status === 'terminé'"
+              *ngIf="apt.status === 'terminé' && !invoicedIds.has(apt._id)"
               (click)="facturer(apt)"
               [disabled]="facturingId === apt._id"
               style="font-size:12px;height:32px">
               <mat-icon style="font-size:14px;margin-right:2px">receipt_long</mat-icon>
               {{ facturingId === apt._id ? '…' : 'Facturer' }}
             </button>
+            <span class="status-badge payé"
+              *ngIf="apt.status === 'terminé' && invoicedIds.has(apt._id)"
+              style="display:inline-flex;align-items:center;gap:4px">
+              <mat-icon style="font-size:14px;width:14px;height:14px">check_circle</mat-icon>
+              Facturé
+            </span>
           </div>
         </div>
       </ng-container>
@@ -125,6 +132,7 @@ export class SecretaryScheduleComponent implements OnInit, OnDestroy {
   loading = false;
   selectedDate = new Date();
   facturingId: string | null = null;
+  invoicedIds = new Set<string>();
   private pollHandle?: ReturnType<typeof setInterval>;
 
   constructor(
@@ -135,8 +143,21 @@ export class SecretaryScheduleComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    this.loadInvoiced();
     this.load();
     this.pollHandle = setInterval(() => this.load(true), 15_000);
+  }
+
+  loadInvoiced(): void {
+    this.invoiceSvc.getAll().subscribe({
+      next: res => {
+        this.invoicedIds = new Set(
+          (res.invoices || [])
+            .map(i => typeof i.appointment === 'string' ? i.appointment : (i.appointment as any)?._id)
+            .filter(Boolean) as string[]
+        );
+      }
+    });
   }
 
   ngOnDestroy(): void { clearInterval(this.pollHandle); }
@@ -196,23 +217,32 @@ export class SecretaryScheduleComponent implements OnInit, OnDestroy {
       this.snack.open('Données du rendez-vous incomplètes.', 'OK', { duration: 3000 });
       return;
     }
-    this.facturingId = apt._id;
-    this.invoiceSvc.create({
-      appointmentId: apt._id,
-      patientId,
-      doctorId,
-      nomenclature: `Consultation — ${apt.reason || 'Consultation'}`,
-      amount: 0
-    }).subscribe({
-      next: () => {
-        this.facturingId = null;
-        this.snack.open('Facture créée. Modifiez le montant dans Facturation.', 'OK', { duration: 4000 });
-      },
-      error: err => {
-        this.facturingId = null;
-        const msg = err?.error?.message || 'Erreur lors de la création de la facture.';
-        this.snack.open(msg, 'OK', { duration: 4000 });
-      }
+    const baseFee = typeof apt.doctor === 'object' ? Number((apt.doctor as any).baseFee) || 0 : 0;
+    const ref = this.dialog.open(FacturerDialogComponent, {
+      width: '460px',
+      data: { appointment: apt, baseFee }
+    });
+    ref.afterClosed().subscribe((result: FacturerDialogResult | undefined) => {
+      if (!result) return;
+      this.facturingId = apt._id;
+      this.invoiceSvc.create({
+        appointmentId: apt._id,
+        patientId,
+        doctorId,
+        nomenclature: result.nomenclature,
+        amount: result.amount
+      }).subscribe({
+        next: () => {
+          this.facturingId = null;
+          this.invoicedIds.add(apt._id);
+          this.snack.open('Facture créée avec succès.', 'OK', { duration: 3000 });
+        },
+        error: err => {
+          this.facturingId = null;
+          const msg = err?.error?.message || 'Erreur lors de la création de la facture.';
+          this.snack.open(msg, 'OK', { duration: 4000 });
+        }
+      });
     });
   }
 

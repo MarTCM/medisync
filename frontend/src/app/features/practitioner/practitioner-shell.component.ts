@@ -30,6 +30,9 @@ import { AuthService } from '../../core/services/auth.service';
           <a routerLink="/doctor/leaves" routerLinkActive="active-link">
             <mat-icon>beach_access</mat-icon> Congés / Absences
           </a>
+          <a routerLink="/doctor/profile" routerLinkActive="active-link">
+            <mat-icon>account_circle</mat-icon> Mon profil
+          </a>
         </div>
 
         <div class="nav-footer">

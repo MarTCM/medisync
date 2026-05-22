@@ -10,8 +10,26 @@ export class AdminService {
 
   constructor(private http: HttpClient) {}
 
-  createStaff(data: { email: string; password: string; role: string; firstName: string; lastName: string; specialties?: string[]; baseFee?: number }): Observable<any> {
+  createStaff(data: {
+    email: string; password: string; role: string; firstName: string; lastName: string;
+    specialties?: string[]; baseFee?: number;
+    languages?: string[]; location?: string; sector?: 1 | 2 | 3;
+    schedule?: { workDays?: string[]; startHour?: string; endHour?: string; defaultConsultationDuration?: 15 | 30 | 60 };
+  }): Observable<any> {
     return this.http.post(`${this.api}/create-staff`, data);
+  }
+
+  updateStaff(id: string, data: {
+    email?: string; firstName?: string; lastName?: string;
+    specialties?: string[]; baseFee?: number;
+    languages?: string[]; location?: string; sector?: 1 | 2 | 3;
+    schedule?: { workDays?: string[]; startHour?: string; endHour?: string; defaultConsultationDuration?: 15 | 30 | 60 };
+  }): Observable<any> {
+    return this.http.patch(`${this.api}/staff/${id}`, data);
+  }
+
+  deleteAccount(id: string): Observable<any> {
+    return this.http.delete(`${this.api}/accounts/${id}`);
   }
 
   listStaff(): Observable<{ staff: any[] }> {
