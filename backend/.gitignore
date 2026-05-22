@@ -1,0 +1,14 @@
+# Dépendances Node.js
+node_modules/
+
+# Variables d'environnement (SECRETS)
+.env
+
+# Fichiers de log
+npm-debug.log*
+
+# Dossier des uploads locaux (Radios, PDF)
+uploads/
+
+# Fichiers système
+.DS_Store

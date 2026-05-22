@@ -1,0 +1,33 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm ls *)",
+      "Bash(npm install *)",
+      "Bash(node -e \"require\\('./server.js'\\)\")",
+      "Bash(curl -s http://localhost:3000/health)",
+      "Bash(kill %1)",
+      "Bash(MONGO_URI=mongodb://localhost:27017/medisync JWT_SECRET=test node -e \"require\\('./server.js'\\)\")",
+      "Bash(MONGO_URI=mongodb://localhost:27017/medisync JWT_SECRET=test node -e ' *)",
+      "Bash(npx @angular/cli@17 new frontend --routing --standalone --style=scss --ssr=false --skip-git)",
+      "Bash(npm list *)",
+      "Bash(npx ng *)",
+      "Bash(curl -s http://localhost:4200)",
+      "Bash(mongod --version)",
+      "Bash(systemctl status *)",
+      "Read(//etc/**)",
+      "Read(//var/lib/mongodb/**)",
+      "Read(//var/log/mongodb/**)",
+      "Bash(sudo ls -la /var/lib/mongodb/)",
+      "Bash(sudo ls -la /var/log/mongodb/)",
+      "Bash(ng build *)",
+      "Bash(xargs cat)",
+      "Bash(xargs ls -la)",
+      "Bash(npx tsc *)",
+      "Bash(node -e ' *)",
+      "Bash(grep -r \"nodemailer\\\\|sendEmail\\\\|sendMail\\\\|mailTransport\\\\|SMTP\" /home/martcm/Desktop/Dev/Angular/medisync/backend --include=\"*.js\" --include=\"*.ts\" ! -path \"*/node_modules/*\" -l)",
+      "mcp__claude_ai_Context7__resolve-library-id",
+      "mcp__claude_ai_Context7__query-docs",
+      "Bash(npm uninstall *)"
+    ]
+  }
+}

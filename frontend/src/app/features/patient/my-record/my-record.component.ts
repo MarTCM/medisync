@@ -1,0 +1,192 @@
+import { Component, OnInit } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { MatButtonModule } from '@angular/material/button';
+import { MatIconModule } from '@angular/material/icon';
+import { MatExpansionModule } from '@angular/material/expansion';
+import { MatChipsModule } from '@angular/material/chips';
+import { RecordService } from '../../../core/services/record.service';
+import { MedicalRecord, DoctorProfile, Consultation } from '../../../core/models';
+import { environment } from '../../../../environments/environment';
+
+@Component({
+  selector: 'app-my-record',
+  standalone: true,
+  imports: [CommonModule, MatButtonModule, MatIconModule, MatExpansionModule, MatChipsModule],
+  template: `
+    <div class="page-container">
+      <div class="page-header">
+        <div>
+          <h2>Mon dossier médical</h2>
+          <div class="page-subtitle">Antécédents, consultations, ordonnances et documents</div>
+        </div>
+        <label mat-raised-button color="primary" style="cursor:pointer">
+          <mat-icon>upload_file</mat-icon> Téléverser un document
+          <input type="file" hidden (change)="uploadFile($event)" accept=".pdf,.jpg,.jpeg,.png,.dcm">
+        </label>
+      </div>
+
+      <div *ngIf="loading" style="text-align:center;padding:48px;color:var(--text-muted)">Chargement…</div>
+      <div *ngIf="error" class="msg-error"><mat-icon>error_outline</mat-icon> {{ error }}</div>
+
+      <!-- Tabs -->
+      <div *ngIf="record" class="tab-bar">
+        <button class="tab" [class.active]="tab === 'general'" (click)="tab = 'general'">
+          Antécédents
+        </button>
+        <button class="tab" [class.active]="tab === 'consultations'" (click)="tab = 'consultations'">
+          Consultations ({{ record.consultations?.length || 0 }})
+        </button>
+        <button class="tab" [class.active]="tab === 'documents'" (click)="tab = 'documents'">
+          Documents ({{ record.attachments?.length || 0 }})
+        </button>
+      </div>
+
+      <!-- General -->
+      <div class="card" *ngIf="record" [hidden]="tab !== 'general'">
+        <div class="card-header"><h3>Informations médicales générales</h3></div>
+        <div style="margin-bottom:16px">
+          <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px">Antécédents</div>
+          <span *ngIf="!record.history?.length" style="color:var(--text-muted);font-size:13.5px">Aucun antécédent enregistré.</span>
+          <mat-chip-set *ngIf="record.history?.length">
+            <mat-chip *ngFor="let h of record.history">{{ h }}</mat-chip>
+          </mat-chip-set>
+        </div>
+        <div>
+          <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px">Allergies</div>
+          <span *ngIf="!record.allergies?.length" style="color:var(--text-muted);font-size:13.5px">Aucune allergie enregistrée.</span>
+          <mat-chip-set *ngIf="record.allergies?.length">
+            <mat-chip color="warn" *ngFor="let a of record.allergies">{{ a }}</mat-chip>
+          </mat-chip-set>
+        </div>
+      </div>
+
+      <!-- Consultations -->
+      <div class="card" *ngIf="record" [hidden]="tab !== 'consultations'">
+        <div class="card-header"><h3>Historique des consultations</h3></div>
+        <div *ngIf="!record.consultations?.length" class="empty-state" style="padding:32px 0;border:none">
+          <mat-icon>history</mat-icon>
+          <div class="empty-title">Aucune consultation</div>
+          <p>Vos comptes rendus apparaîtront ici après vos rendez-vous</p>
+        </div>
+        <mat-accordion *ngIf="record.consultations?.length">
+          <mat-expansion-panel *ngFor="let c of record.consultations" style="margin-bottom:8px">
+            <mat-expansion-panel-header>
+              <mat-panel-title style="font-weight:600">
+                {{ c.date | date:'d MMMM y':'':'fr' }}
+              </mat-panel-title>
+              <mat-panel-description>
+                <ng-container *ngIf="isDoctor(c.doctorId)">
+                  Dr. {{ c.doctorId.firstName }} {{ c.doctorId.lastName }}
+                </ng-container>
+              </mat-panel-description>
+            </mat-expansion-panel-header>
+            <div style="padding:8px 0">
+              <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:6px">Compte rendu</div>
+              <p style="font-size:14px;color:var(--text);margin-bottom:16px">{{ c.report }}</p>
+
+              <ng-container *ngIf="c.prescriptions?.length">
+                <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px">Prescriptions</div>
+                <div *ngFor="let p of c.prescriptions"
+                  style="background:var(--surface-2);border:1px solid var(--border);border-radius:8px;padding:10px 14px;margin-bottom:6px;font-size:13.5px">
+                  <strong>{{ p.medication }}</strong> — {{ p.dosage }} — {{ p.duration }}
+                </div>
+                <button mat-stroked-button color="primary" (click)="downloadPrescription(c)" style="margin-top:10px">
+                  <mat-icon>download</mat-icon> Télécharger l'ordonnance (PDF)
+                </button>
+              </ng-container>
+            </div>
+          </mat-expansion-panel>
+        </mat-accordion>
+      </div>
+
+      <!-- Documents -->
+      <div class="card" *ngIf="record" [hidden]="tab !== 'documents'">
+        <div class="card-header">
+          <h3>Documents médicaux</h3>
+          <div class="card-subtitle">Formats acceptés : PDF, JPG, PNG, DICOM (20 Mo max)</div>
+        </div>
+        <div *ngIf="!record.attachments?.length" class="empty-state" style="padding:32px 0;border:none">
+          <mat-icon>folder_open</mat-icon>
+          <div class="empty-title">Aucun document</div>
+          <p>Téléversez vos analyses, radios ou autres documents médicaux</p>
+        </div>
+        <div *ngFor="let att of record.attachments"
+          style="display:flex;justify-content:space-between;align-items:center;padding:14px 16px;border:1px solid var(--border);border-radius:8px;margin-bottom:8px;background:var(--surface)">
+          <div style="display:flex;align-items:center;gap:14px;min-width:0">
+            <div style="width:36px;height:36px;border-radius:8px;background:var(--primary-light);color:var(--primary-dark);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+              <mat-icon style="font-size:20px;width:20px;height:20px">description</mat-icon>
+            </div>
+            <div style="min-width:0">
+              <div style="font-weight:600;font-size:14px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ att.fileName }}</div>
+              <div style="font-size:12px;color:var(--text-muted)">
+                {{ att.fileType }} · {{ att.uploadedAt | date:'d MMM y':'':'fr' }}
+              </div>
+            </div>
+          </div>
+          <button mat-stroked-button (click)="openDoc(att.fileUrl)">
+            <mat-icon>open_in_new</mat-icon> Ouvrir
+          </button>
+        </div>
+      </div>
+
+      <!-- No record -->
+      <div *ngIf="!loading && !record && !error" class="empty-state">
+        <mat-icon>folder_open</mat-icon>
+        <div class="empty-title">Aucun dossier médical</div>
+        <p>Votre dossier sera créé après votre première consultation.</p>
+      </div>
+    </div>
+  `
+})
+export class MyRecordComponent implements OnInit {
+  record: MedicalRecord | null = null;
+  loading = true;
+  error = '';
+  tab: 'general' | 'consultations' | 'documents' = 'general';
+  uploadsUrl = environment.uploadsUrl;
+
+  constructor(private recordSvc: RecordService) {}
+
+  ngOnInit(): void {
+    this.recordSvc.getMyRecord().subscribe({
+      next: res => { this.record = res.record; this.loading = false; },
+      error: err => {
+        this.loading = false;
+        if (err.status !== 404) {
+          this.error = err.error?.message || 'Erreur de chargement.';
+        }
+      }
+    });
+  }
+
+  downloadPrescription(c: Consultation): void {
+    this.recordSvc.downloadPrescription(c._id).subscribe(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `Ordonnance-${c._id}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  openDoc(fileUrl: string): void {
+    window.open(`${this.uploadsUrl}/${fileUrl}`, '_blank', 'noopener');
+  }
+
+  uploadFile(event: Event): void {
+    const file = (event.target as HTMLInputElement).files?.[0];
+    if (!file) return;
+    this.recordSvc.uploadDocument(file).subscribe({
+      next: () => {
+        this.recordSvc.getMyRecord().subscribe(res => {
+          this.record = res.record;
+          this.tab = 'documents';
+        });
+      },
+      error: err => alert(err.error?.message || 'Erreur lors du téléversement')
+    });
+  }
+
+  isDoctor(d: any): d is DoctorProfile { return d && typeof d === 'object'; }
+}
