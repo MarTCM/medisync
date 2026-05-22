@@ -27,7 +27,9 @@
       "Bash(grep -r \"nodemailer\\\\|sendEmail\\\\|sendMail\\\\|mailTransport\\\\|SMTP\" /home/martcm/Desktop/Dev/Angular/medisync/backend --include=\"*.js\" --include=\"*.ts\" ! -path \"*/node_modules/*\" -l)",
       "mcp__claude_ai_Context7__resolve-library-id",
       "mcp__claude_ai_Context7__query-docs",
-      "Bash(npm uninstall *)"
+      "Bash(npm uninstall *)",
+      "Bash(grep -E \"\\\\.\\(ts|html\\)$\")",
+      "Bash(xargs ls -1)"
     ]
   }
 }

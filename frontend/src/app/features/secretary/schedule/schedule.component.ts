@@ -13,6 +13,7 @@ import { AppointmentService } from '../../../core/services/appointment.service';
 import { InvoiceService } from '../../../core/services/invoice.service';
 import { Appointment } from '../../../core/models';
 import { BookForPatientDialogComponent } from '../book-for-patient-dialog/book-for-patient-dialog.component';
+import { RescheduleDialogComponent } from '../reschedule-dialog/reschedule-dialog.component';
 import { toLocalDateString } from '../../../core/utils/date';
 
 @Component({
@@ -92,6 +93,12 @@ import { toLocalDateString } from '../../../core/utils/date';
               (click)="noShow(apt._id)"
               style="font-size:12px;height:32px">
               No-show
+            </button>
+            <button mat-stroked-button
+              *ngIf="apt.status === 'en attente' || apt.status === 'confirmé'"
+              (click)="openReschedule(apt)"
+              style="font-size:12px;height:32px">
+              <mat-icon style="font-size:14px;margin-right:2px">swap_horiz</mat-icon> Déplacer
             </button>
             <button mat-stroked-button color="warn"
               *ngIf="apt.status === 'en attente' || apt.status === 'confirmé'"
@@ -174,6 +181,11 @@ export class SecretaryScheduleComponent implements OnInit, OnDestroy {
 
   newAppt(): void {
     const ref = this.dialog.open(BookForPatientDialogComponent, { width: '520px' });
+    ref.afterClosed().subscribe(saved => { if (saved) this.load(); });
+  }
+
+  openReschedule(apt: Appointment): void {
+    const ref = this.dialog.open(RescheduleDialogComponent, { width: '420px', data: apt });
     ref.afterClosed().subscribe(saved => { if (saved) this.load(); });
   }
 

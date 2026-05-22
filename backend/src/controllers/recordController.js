@@ -16,11 +16,13 @@ exports.addConsultation = async (req, res) => {
       return res.status(404).json({ message: "Profil médecin introuvable." });
     }
 
+    const cleanPrescriptions = (prescriptions || []).filter(p => p.medication && p.medication.trim());
+
     const newConsultation = {
       appointmentId,
       doctorId: doctorProfile._id,
       report,
-      prescriptions
+      prescriptions: cleanPrescriptions
     };
 
     let record = await MedicalRecord.findOne({ patient: patientId });
@@ -64,6 +66,7 @@ exports.addConsultation = async (req, res) => {
     });
 
   } catch (error) {
+    console.error('[addConsultation] error:', error.message, error.errors ? JSON.stringify(error.errors) : '');
     res.status(500).json({ message: "Erreur lors de l'ajout au dossier", error: error.message });
   }
 };

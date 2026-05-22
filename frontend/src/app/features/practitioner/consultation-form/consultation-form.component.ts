@@ -8,15 +8,20 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
+import { MatMenuModule } from '@angular/material/menu';
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { RecordService } from '../../../core/services/record.service';
 import { Appointment, MedicalRecord } from '../../../core/models';
 import { environment } from '../../../../environments/environment';
+import { MEDICATIONS, MedicationEntry } from '../../../core/data/medications';
+import { CONSULTATION_TEMPLATES, getTemplateForSpecialty, listTemplates } from '../../../core/data/consultation-templates';
 
 @Component({
   selector: 'app-consultation-form',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, MatDialogModule, MatFormFieldModule,
-    MatInputModule, MatButtonModule, MatChipsModule, MatIconModule, MatExpansionModule],
+    MatInputModule, MatButtonModule, MatChipsModule, MatIconModule, MatExpansionModule,
+    MatMenuModule, MatAutocompleteModule],
   template: `
     <h2 mat-dialog-title>Consultation — {{ patientName }}</h2>
     <mat-dialog-content style="min-width:560px; max-height:80vh">
@@ -67,9 +72,21 @@ import { environment } from '../../../../environments/environment';
       <div *ngIf="loadingRecord" style="font-size:13px;color:#666;margin-bottom:12px">Chargement du dossier…</div>
 
       <form [formGroup]="form">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+          <span style="font-weight:600">Compte rendu médical</span>
+          <button mat-stroked-button type="button" [matMenuTriggerFor]="tplMenu" style="font-size:12px;height:30px">
+            <mat-icon style="font-size:16px;width:16px;height:16px">description</mat-icon>
+            Modèle : {{ currentTemplateLabel }}
+          </button>
+          <mat-menu #tplMenu="matMenu">
+            <button mat-menu-item *ngFor="let t of templates" (click)="applyTemplate(t.key)">
+              {{ t.label }}
+            </button>
+          </mat-menu>
+        </div>
         <mat-form-field style="width:100%; margin-bottom:12px">
-          <mat-label>Compte rendu médical</mat-label>
-          <textarea matInput formControlName="report" rows="5" placeholder="Observations, diagnostic, traitement recommandé…"></textarea>
+          <mat-label>Observations, diagnostic, traitement…</mat-label>
+          <textarea matInput formControlName="report" rows="8"></textarea>
         </mat-form-field>
 
         <div style="font-weight:600; margin-bottom:8px">Prescriptions</div>
@@ -78,7 +95,18 @@ import { environment } from '../../../../environments/environment';
             style="display:flex; gap:8px; margin-bottom:8px; align-items:center">
             <mat-form-field style="flex:2">
               <mat-label>Médicament</mat-label>
-              <input matInput formControlName="medication">
+              <input matInput formControlName="medication"
+                [matAutocomplete]="medAuto"
+                (input)="onMedInput(i, $any($event.target).value)">
+              <mat-autocomplete #medAuto="matAutocomplete"
+                (optionSelected)="onMedSelected(i, $event.option.value)">
+                <mat-option *ngFor="let m of filteredMeds[i] || []" [value]="m.name">
+                  <div style="display:flex;flex-direction:column;line-height:1.2">
+                    <span style="font-weight:500">{{ m.name }}</span>
+                    <span style="font-size:11px;color:#64748b">{{ m.commonDosage }}</span>
+                  </div>
+                </mat-option>
+              </mat-autocomplete>
             </mat-form-field>
             <mat-form-field style="flex:2">
               <mat-label>Posologie</mat-label>
@@ -126,6 +154,9 @@ export class ConsultationFormComponent implements OnInit {
   record: MedicalRecord | null = null;
   uploadedFile: File | null = null;
   uploadsUrl = environment.uploadsUrl;
+  templates = listTemplates();
+  currentTemplateLabel = 'Médecine générale';
+  filteredMeds: MedicationEntry[][] = [];
 
   get prescriptions(): FormArray { return this.form.get('prescriptions') as FormArray; }
 
@@ -149,6 +180,12 @@ export class ConsultationFormComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    const doctor = this.apt.doctor as any;
+    const specialty = doctor?.specialties?.[0];
+    const tpl = getTemplateForSpecialty(specialty);
+    this.currentTemplateLabel = tpl.label;
+    this.form.patchValue({ report: tpl.body });
+
     if (this.patientId) {
       this.loadingRecord = true;
       this.recordSvc.getPatientRecord(this.patientId).subscribe({
@@ -158,15 +195,42 @@ export class ConsultationFormComponent implements OnInit {
     }
   }
 
+  applyTemplate(key: string): void {
+    const tpl = CONSULTATION_TEMPLATES[key];
+    if (!tpl) return;
+    this.currentTemplateLabel = tpl.label;
+    this.form.patchValue({ report: tpl.body });
+  }
+
   openDoc(fileUrl: string): void {
     window.open(`${this.uploadsUrl}/${fileUrl}`, '_blank', 'noopener');
   }
 
   addRx(): void {
     this.prescriptions.push(this.fb.group({ medication: ['', Validators.required], dosage: [''], duration: [''] }));
+    this.filteredMeds.push([]);
   }
 
-  removeRx(i: number): void { this.prescriptions.removeAt(i); }
+  removeRx(i: number): void {
+    this.prescriptions.removeAt(i);
+    this.filteredMeds.splice(i, 1);
+  }
+
+  onMedInput(i: number, value: string): void {
+    const q = (value || '').toLowerCase().trim();
+    if (!q) { this.filteredMeds[i] = MEDICATIONS.slice(0, 8); return; }
+    this.filteredMeds[i] = MEDICATIONS.filter(m => m.name.toLowerCase().includes(q)).slice(0, 12);
+  }
+
+  onMedSelected(i: number, name: string): void {
+    const med = MEDICATIONS.find(m => m.name === name);
+    if (med) {
+      const group = this.prescriptions.at(i);
+      if (group && !group.value.dosage) {
+        group.patchValue({ dosage: med.commonDosage });
+      }
+    }
+  }
 
   onFileSelected(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];

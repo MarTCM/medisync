@@ -31,6 +31,9 @@ router.get('/overdue', protect, authorize('secretaire', 'administrateur'), invoi
 // Télécharger une facture en PDF
 router.get('/:id/pdf', protect, authorize('secretaire', 'administrateur', 'patient'), invoiceController.generateInvoicePDF);
 
+// Télécharger la feuille de soins (formulaire Sécu)
+router.get('/:id/feuille-soins', protect, authorize('secretaire', 'administrateur'), invoiceController.generateFeuilleSoinsPDF);
+
 // Envoyer la facture PDF par email au patient
 router.post('/:id/send-email', protect, authorize('secretaire', 'administrateur'), invoiceController.sendInvoiceEmail);
 

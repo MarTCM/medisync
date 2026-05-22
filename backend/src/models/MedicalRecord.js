@@ -23,9 +23,9 @@ const medicalRecordSchema = new mongoose.Schema({
     
     // Prescriptions électroniques
     prescriptions: [{
-      medication: { type: String, required: true }, // Nom du médicament
-      dosage: { type: String, required: true }, // (ex: "1 comprimé matin et soir")
-      duration: { type: String, required: true } // (ex: "Pendant 7 jours")
+      medication: { type: String, required: true },
+      dosage: { type: String, default: '' },
+      duration: { type: String, default: '' }
     }]
   }],
 

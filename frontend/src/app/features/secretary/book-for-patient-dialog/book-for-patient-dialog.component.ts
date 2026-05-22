@@ -8,6 +8,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { DoctorService } from '../../../core/services/doctor.service';
 import { AdminService } from '../../../core/services/admin.service';
@@ -17,11 +18,24 @@ import { toLocalDateString } from '../../../core/utils/date';
   selector: 'app-book-for-patient-dialog',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, MatDialogModule, MatFormFieldModule, MatInputModule,
-    MatSelectModule, MatButtonModule, MatDatepickerModule, MatNativeDateModule],
+    MatSelectModule, MatButtonModule, MatDatepickerModule, MatNativeDateModule, MatCheckboxModule],
   template: `
-    <h2 mat-dialog-title>Nouveau rendez-vous</h2>
+    <h2 mat-dialog-title>
+      Nouveau rendez-vous
+      <span *ngIf="form.value.urgent" style="background:#fee2e2;color:#b91c1c;padding:2px 8px;border-radius:10px;font-size:11px;font-weight:600;margin-left:8px;vertical-align:3px">
+        URGENCE
+      </span>
+    </h2>
     <mat-dialog-content style="min-width:440px">
       <form [formGroup]="form">
+        <div style="background:#fef2f2;border:1px solid #fecaca;border-radius:6px;padding:10px 12px;margin-bottom:14px">
+          <mat-checkbox formControlName="urgent" (change)="onUrgentToggle($event.checked)" color="warn">
+            <strong>Rendez-vous urgent</strong> — insertion prioritaire
+          </mat-checkbox>
+          <div *ngIf="form.value.urgent" style="font-size:12px;color:#7f1d1d;margin-top:4px;margin-left:30px">
+            Le créneau sera inséré aujourd'hui (15 min) même en cas de conflit.
+          </div>
+        </div>
         <mat-form-field style="width:100%; margin-bottom:8px">
           <mat-label>Patient</mat-label>
           <mat-select formControlName="patientId">
@@ -102,8 +116,24 @@ export class BookForPatientDialogComponent implements OnInit {
       date:      [null, Validators.required],
       time:      ['', [Validators.required, Validators.pattern(/^\d{2}:\d{2}$/)]],
       duration:  [30, Validators.required],
-      reason:    ['consultation générale', Validators.required]
+      reason:    ['consultation générale', Validators.required],
+      urgent:    [false]
     });
+  }
+
+  onUrgentToggle(checked: boolean): void {
+    if (checked) {
+      const now = new Date();
+      const next = new Date(now.getTime() + 5 * 60_000);
+      const hh = String(next.getHours()).padStart(2, '0');
+      const mm = String(Math.ceil(next.getMinutes() / 5) * 5).padStart(2, '0');
+      this.form.patchValue({
+        reason: 'urgence',
+        duration: 15,
+        date: new Date(),
+        time: `${hh}:${mm === '60' ? '00' : mm}`
+      });
+    }
   }
 
   ngOnInit(): void {
@@ -119,9 +149,9 @@ export class BookForPatientDialogComponent implements OnInit {
     if (this.form.invalid) return;
     this.loading = true;
     this.error = '';
-    const { patientId, doctorId, date, time, duration, reason } = this.form.value;
+    const { patientId, doctorId, date, time, duration, reason, urgent } = this.form.value;
     const dateStr = toLocalDateString(date as Date);
-    this.apptSvc.create({ patientId, doctorId, date: dateStr, time, duration, reason } as any).subscribe({
+    this.apptSvc.create({ patientId, doctorId, date: dateStr, time, duration, reason, urgent } as any).subscribe({
       next: () => { this.loading = false; this.dialogRef.close(true); },
       error: err => { this.loading = false; this.error = err.error?.message || 'Erreur lors de la création.'; }
     });

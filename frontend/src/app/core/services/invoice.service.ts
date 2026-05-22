@@ -30,6 +30,10 @@ export class InvoiceService {
     return this.http.get(`${this.api}/${id}/pdf`, { responseType: 'blob' });
   }
 
+  downloadFeuilleSoins(id: string): Observable<Blob> {
+    return this.http.get(`${this.api}/${id}/feuille-soins`, { responseType: 'blob' });
+  }
+
   sendEmail(id: string): Observable<any> {
     return this.http.post(`${this.api}/${id}/send-email`, {});
   }

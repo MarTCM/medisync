@@ -24,6 +24,9 @@ import { AuthService } from '../../core/services/auth.service';
           <a routerLink="/doctor" routerLinkActive="active-link" [routerLinkActiveOptions]="{exact:true}">
             <mat-icon>today</mat-icon> Planning
           </a>
+          <a routerLink="/doctor/availability" routerLinkActive="active-link">
+            <mat-icon>schedule</mat-icon> Disponibilités
+          </a>
           <a routerLink="/doctor/leaves" routerLinkActive="active-link">
             <mat-icon>beach_access</mat-icon> Congés / Absences
           </a>

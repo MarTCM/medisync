@@ -105,8 +105,11 @@ import { Appointment, Invoice } from '../../../core/models';
                 <td style="font-weight:600">{{ inv.amount }} DH</td>
                 <td><span [class]="'status-badge ' + inv.status">{{ inv.status }}</span></td>
                 <td style="text-align:right">
-                  <button mat-icon-button (click)="download(inv)" title="Télécharger PDF">
+                  <button mat-icon-button (click)="download(inv)" title="Télécharger facture PDF">
                     <mat-icon>download</mat-icon>
+                  </button>
+                  <button mat-icon-button (click)="downloadFeuilleSoins(inv)" title="Feuille de soins (Sécu)">
+                    <mat-icon>medical_information</mat-icon>
                   </button>
                   <button mat-icon-button (click)="sendEmail(inv._id)" title="Envoyer par email">
                     <mat-icon>email</mat-icon>
@@ -262,6 +265,15 @@ export class SecretaryInvoicesComponent implements OnInit {
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url; a.download = `Facture-${inv._id}.pdf`; a.click();
+      URL.revokeObjectURL(url);
+    });
+  }
+
+  downloadFeuilleSoins(inv: Invoice): void {
+    this.invoiceSvc.downloadFeuilleSoins(inv._id).subscribe(blob => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = `Feuille-soins-${inv._id}.pdf`; a.click();
       URL.revokeObjectURL(url);
     });
   }
