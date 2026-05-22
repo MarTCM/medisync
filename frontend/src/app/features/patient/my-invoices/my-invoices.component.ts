@@ -34,14 +34,14 @@ import { Invoice } from '../../../core/models';
             <div class="stat-icon amber"><mat-icon>schedule</mat-icon></div>
             <div>
               <div class="stat-label">En attente</div>
-              <div class="stat-value">{{ countByStatus('non payé') }}</div>
+              <div class="stat-value">{{ pendingCount }}</div>
             </div>
           </div>
           <div class="stat-card" style="cursor:default">
             <div class="stat-icon red"><mat-icon>warning</mat-icon></div>
             <div>
               <div class="stat-label">En retard</div>
-              <div class="stat-value">{{ countByStatus('en retard') }}</div>
+              <div class="stat-value">{{ overdueCount }}</div>
             </div>
           </div>
           <div class="stat-card" style="cursor:default">
@@ -112,8 +112,26 @@ export class MyInvoicesComponent implements OnInit {
     return this.invoices.filter(i => i.status === 'payé').reduce((sum, i) => sum + (i.amount || 0), 0);
   }
 
+  get pendingCount(): number {
+    return this.invoices.filter(i => this.isUnpaid(i) && !this.isOverdue(i)).length;
+  }
+
+  get overdueCount(): number {
+    return this.invoices.filter(i => this.isUnpaid(i) && this.isOverdue(i)).length;
+  }
+
   countByStatus(s: string): number {
     return this.invoices.filter(i => i.status === s).length;
+  }
+
+  private isUnpaid(inv: Invoice): boolean {
+    return inv.status === 'en attente' || inv.status === 'impayé';
+  }
+
+  private isOverdue(inv: Invoice): boolean {
+    if (!inv.issuedAt) return false;
+    const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+    return new Date(inv.issuedAt).getTime() < cutoff;
   }
 
   download(inv: Invoice): void {
