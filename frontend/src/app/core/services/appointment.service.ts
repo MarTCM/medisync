@@ -48,4 +48,10 @@ export class AppointmentService {
   setUnavailability(data: { date: string; startTime: string; endTime: string; reason?: string }): Observable<any> {
     return this.http.post(`${this.api}/unavailability`, data);
   }
+
+  getAvailableSlots(doctorId: string, date: string, duration: number): Observable<{ slots: { time: string; available: boolean }[] }> {
+    return this.http.get<{ slots: { time: string; available: boolean }[] }>(`${this.api}/available-slots`, {
+      params: { doctorId, date, duration: duration.toString() }
+    });
+  }
 }

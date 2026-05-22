@@ -1,7 +1,9 @@
 export interface Account {
   id: string;
   email?: string;
+  socialSecurityNumber?: string;
   role: 'patient' | 'medecin' | 'secretaire' | 'administrateur';
+  profileCompleted?: boolean;
 }
 
 export interface PatientProfile {

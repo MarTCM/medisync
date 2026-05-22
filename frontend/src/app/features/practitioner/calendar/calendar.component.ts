@@ -13,6 +13,7 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { forkJoin, of } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 import { AppointmentService } from '../../../core/services/appointment.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Appointment } from '../../../core/models';
 import { ConsultationFormComponent } from '../consultation-form/consultation-form.component';
 import { toLocalDateString } from '../../../core/utils/date';
@@ -37,7 +38,7 @@ interface DayCell {
     <div class="page-container">
       <div class="page-header">
         <div>
-          <h2>Planning</h2>
+          <h2>Bonjour{{ firstName ? ', Dr. ' + firstName : '' }} 👋</h2>
           <div class="page-subtitle">{{ headerSubtitle() }}</div>
         </div>
         <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
@@ -293,11 +294,16 @@ export class DoctorCalendarComponent implements OnInit, OnDestroy {
   loadError = '';
   selectedDate = new Date();
   dayNames = ['Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam', 'Dim'];
+  firstName = '';
   private pollHandle?: ReturnType<typeof setInterval>;
 
-  constructor(private apptSvc: AppointmentService, private dialog: MatDialog) {}
+  constructor(private apptSvc: AppointmentService, private dialog: MatDialog, private auth: AuthService) {}
 
   ngOnInit(): void {
+    this.auth.getMe().subscribe({
+      next: res => { this.firstName = res?.profile?.firstName || ''; },
+      error: () => {}
+    });
     this.load();
     this.pollHandle = setInterval(() => this.load(true), 15_000);
   }

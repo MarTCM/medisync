@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -8,6 +8,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { AuthService } from '../../../core/services/auth.service';
+import { GoogleAuthService } from '../../../core/services/google-auth.service';
 
 @Component({
   selector: 'app-login',
@@ -38,7 +39,7 @@ import { AuthService } from '../../../core/services/auth.service';
 
           <form [formGroup]="form" (ngSubmit)="onSubmit()">
             <mat-form-field class="full-width" appearance="outline">
-              <mat-label>Email ou N° Sécurité Sociale</mat-label>
+              <mat-label>Email ou N° Sécurité Sociale (CIN)</mat-label>
               <mat-icon matPrefix style="margin-right:6px;color:var(--text-faint)">person</mat-icon>
               <input matInput formControlName="identifier" autocomplete="username">
             </mat-form-field>
@@ -62,25 +63,54 @@ import { AuthService } from '../../../core/services/auth.service';
             </button>
           </form>
 
+          <div class="auth-divider"><span>ou</span></div>
+
+          <div #googleBtn class="google-btn-container"></div>
+
           <div class="auth-link">
             Pas encore de compte ? <a routerLink="/register">Créer un compte patient</a>
           </div>
         </div>
       </div>
     </div>
-  `
+  `,
+  styles: [`
+    .auth-divider {
+      display: flex; align-items: center; gap: 12px;
+      color: var(--text-faint); font-size: 12px; margin: 18px 0 12px;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border, #e2e8f0);
+    }
+    .google-btn-container {
+      display: flex; justify-content: center; min-height: 44px; margin-bottom: 8px;
+    }
+  `]
 })
-export class LoginComponent {
+export class LoginComponent implements AfterViewInit {
+  @ViewChild('googleBtn') googleBtn?: ElementRef<HTMLDivElement>;
+
   form: FormGroup;
   loading = false;
   error = '';
   showPwd = false;
 
-  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private auth: AuthService,
+    private router: Router,
+    private googleAuth: GoogleAuthService
+  ) {
     this.form = this.fb.group({
       identifier: ['', Validators.required],
       password: ['', Validators.required]
     });
+  }
+
+  ngAfterViewInit(): void {
+    if (this.googleBtn) {
+      this.googleAuth.renderButton(this.googleBtn.nativeElement, idToken => this.onGoogleCredential(idToken), 'signin_with');
+    }
   }
 
   onSubmit(): void {
@@ -94,6 +124,8 @@ export class LoginComponent {
         this.loading = false;
         if (res.requires2FA && res.tempToken) {
           this.router.navigate(['/2fa'], { state: { tempToken: res.tempToken } });
+        } else if (res.account && res.account.profileCompleted === false) {
+          this.router.navigate(['/complete-profile']);
         } else {
           this.redirectByRole(res.account?.role);
         }
@@ -101,6 +133,25 @@ export class LoginComponent {
       error: err => {
         this.loading = false;
         this.error = err.error?.message || 'Identifiants incorrects.';
+      }
+    });
+  }
+
+  private onGoogleCredential(idToken: string): void {
+    this.loading = true;
+    this.error = '';
+    this.auth.googleLogin(idToken).subscribe({
+      next: res => {
+        this.loading = false;
+        if (res.account && res.account.profileCompleted === false) {
+          this.router.navigate(['/complete-profile']);
+        } else {
+          this.redirectByRole(res.account?.role);
+        }
+      },
+      error: err => {
+        this.loading = false;
+        this.error = err.error?.message || 'Échec de la connexion Google.';
       }
     });
   }

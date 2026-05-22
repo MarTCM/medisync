@@ -4,6 +4,7 @@ import { RouterModule } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AppointmentService } from '../../../core/services/appointment.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Appointment } from '../../../core/models';
 
 @Component({
@@ -14,7 +15,7 @@ import { Appointment } from '../../../core/models';
     <div class="page-container">
       <div class="page-header">
         <div>
-          <h2>Bonjour 👋</h2>
+          <h2>Bonjour{{ firstName ? ', ' + firstName : '' }} 👋</h2>
           <div class="page-subtitle">Bienvenue dans votre espace MediSync</div>
         </div>
         <a mat-raised-button color="primary" routerLink="/patient/search">
@@ -124,10 +125,15 @@ export class PatientDashboardComponent implements OnInit {
   upcoming: Appointment[] = [];
   next: Appointment | null = null;
   loading = true;
+  firstName = '';
 
-  constructor(private apptSvc: AppointmentService) {}
+  constructor(private apptSvc: AppointmentService, private auth: AuthService) {}
 
   ngOnInit(): void {
+    this.auth.getMe().subscribe({
+      next: res => { this.firstName = res?.profile?.firstName || ''; },
+      error: () => {}
+    });
     this.apptSvc.getMine().subscribe({
       next: apts => {
         const now = new Date();

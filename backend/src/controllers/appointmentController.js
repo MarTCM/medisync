@@ -218,7 +218,77 @@ exports.setIndisponibilite = async (req, res) => {
   }
 };
 
-// 6. Planning journalier du médecin
+// 6. Créneaux disponibles pour un médecin à une date donnée (patient)
+exports.getAvailableSlots = async (req, res) => {
+  try {
+    const { doctorId, date, duration: durationParam } = req.query;
+    if (!doctorId || !date) {
+      return res.status(400).json({ message: 'doctorId et date sont requis.' });
+    }
+
+    const doctorProfile = await DoctorProfile.findById(doctorId);
+    if (!doctorProfile) {
+      return res.status(404).json({ message: 'Médecin introuvable.' });
+    }
+
+    const schedule = doctorProfile.schedule || {};
+    const workDays = schedule.workDays || [];
+    const startHour = schedule.startHour || '09:00';
+    const endHour = schedule.endHour || '18:00';
+    const defaultDuration = schedule.defaultConsultationDuration || 30;
+    const duration = [15, 30, 60].includes(Number(durationParam)) ? Number(durationParam) : defaultDuration;
+
+    const dayNames = ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'];
+    const dateForDay = new Date(`${date}T12:00:00`);
+    const dayName = dayNames[dateForDay.getDay()];
+
+    if (workDays.length > 0 && !workDays.includes(dayName)) {
+      return res.status(200).json({ slots: [] });
+    }
+
+    const requestedDate = new Date(`${date}T12:00:00`);
+    const onLeave = (doctorProfile.leaves || []).some(leave => {
+      return requestedDate >= new Date(leave.startDate) && requestedDate <= new Date(leave.endDate);
+    });
+    if (onLeave) {
+      return res.status(200).json({ slots: [] });
+    }
+
+    const [startH, startM] = startHour.split(':').map(Number);
+    const [endH, endM] = endHour.split(':').map(Number);
+    const startMinutes = startH * 60 + startM;
+    const endMinutes = endH * 60 + endM;
+
+    const allSlotTimes = [];
+    for (let m = startMinutes; m + duration <= endMinutes; m += duration) {
+      const h = String(Math.floor(m / 60)).padStart(2, '0');
+      const min = String(m % 60).padStart(2, '0');
+      allSlotTimes.push(`${h}:${min}`);
+    }
+
+    const startOfDay = new Date(`${date}T00:00:00`);
+    const endOfDay = new Date(`${date}T23:59:59`);
+
+    const booked = await Appointment.find({
+      doctor: doctorId,
+      status: { $ne: 'annulé' },
+      startTime: { $gte: startOfDay, $lte: endOfDay }
+    });
+
+    const slots = allSlotTimes.map(time => {
+      const slotStart = new Date(`${date}T${time}:00`);
+      const slotEnd = new Date(slotStart.getTime() + duration * 60000);
+      const isTaken = booked.some(appt => appt.startTime < slotEnd && appt.endTime > slotStart);
+      return { time, available: !isTaken };
+    });
+
+    res.status(200).json({ slots });
+  } catch (error) {
+    res.status(500).json({ message: 'Erreur lors de la récupération des créneaux', error: error.message });
+  }
+};
+
+// 7. Planning journalier du médecin
 exports.getDoctorDailySchedule = async (req, res) => {
   try {
     const { date } = req.query;
@@ -248,7 +318,7 @@ exports.getDoctorDailySchedule = async (req, res) => {
   }
 };
 
-// 7. Confirmer un rendez-vous (Secrétaire)
+// 8. Confirmer un rendez-vous (Secrétaire)
 exports.confirmAppointment = async (req, res) => {
   try {
     const appointment = await Appointment.findByIdAndUpdate(
@@ -276,7 +346,7 @@ exports.confirmAppointment = async (req, res) => {
   }
 };
 
-// 8. Marquer un rendez-vous comme no-show (Secrétaire)
+// 9. Marquer un rendez-vous comme no-show (Secrétaire)
 exports.markNoShow = async (req, res) => {
   try {
     const appointment = await Appointment.findByIdAndUpdate(

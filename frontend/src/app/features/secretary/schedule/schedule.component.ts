@@ -11,6 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { InvoiceService } from '../../../core/services/invoice.service';
+import { AuthService } from '../../../core/services/auth.service';
 import { Appointment } from '../../../core/models';
 import { BookForPatientDialogComponent } from '../book-for-patient-dialog/book-for-patient-dialog.component';
 import { RescheduleDialogComponent } from '../reschedule-dialog/reschedule-dialog.component';
@@ -25,7 +26,10 @@ import { toLocalDateString } from '../../../core/utils/date';
   template: `
     <div class="page-container">
       <div class="page-header">
-        <h2>Planning de la clinique</h2>
+        <div>
+          <h2>Bonjour{{ firstName ? ', ' + firstName : '' }} 👋</h2>
+          <div class="page-subtitle">Planning de la clinique</div>
+        </div>
         <div style="display:flex;gap:8px">
           <button mat-stroked-button (click)="load()" [disabled]="loading" title="Actualiser">
             <mat-icon>refresh</mat-icon> Actualiser
@@ -133,16 +137,22 @@ export class SecretaryScheduleComponent implements OnInit, OnDestroy {
   selectedDate = new Date();
   facturingId: string | null = null;
   invoicedIds = new Set<string>();
+  firstName = '';
   private pollHandle?: ReturnType<typeof setInterval>;
 
   constructor(
     private apptSvc: AppointmentService,
     private invoiceSvc: InvoiceService,
     private dialog: MatDialog,
-    private snack: MatSnackBar
+    private snack: MatSnackBar,
+    private auth: AuthService
   ) {}
 
   ngOnInit(): void {
+    this.auth.getMe().subscribe({
+      next: res => { this.firstName = res?.profile?.firstName || ''; },
+      error: () => {}
+    });
     this.loadInvoiced();
     this.load();
     this.pollHandle = setInterval(() => this.load(true), 15_000);

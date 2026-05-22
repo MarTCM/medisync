@@ -42,6 +42,7 @@ export class AuthService {
     role: string;
     firstName?: string;
     lastName?: string;
+    phoneNumber?: string;
   }): Observable<AuthResponse> {
     return this.http.post<AuthResponse>(`${this.api}/register`, payload).pipe(
       tap(res => {
@@ -74,6 +75,34 @@ export class AuthService {
 
   getMe(): Observable<{ profile: any }> {
     return this.http.get<{ profile: any }>(`${this.api}/me`);
+  }
+
+  updatePatientProfile(payload: {
+    firstName?: string;
+    lastName?: string;
+    phoneNumber?: string;
+    socialSecurityNumber?: string;
+  }): Observable<{ profile: any }> {
+    return this.http.patch<{ profile: any }>(`${this.api}/me`, payload);
+  }
+
+  completeProfile(payload: {
+    socialSecurityNumber: string;
+    firstName: string;
+    lastName: string;
+    phoneNumber?: string;
+  }): Observable<{ account: Account; profile: any }> {
+    return this.http.post<{ account: Account; profile: any }>(
+      `${this.api}/complete-profile`,
+      payload
+    ).pipe(
+      tap(res => {
+        if (res.account) {
+          TokenStorage.saveUser(res.account);
+          this._currentUser$.next(res.account);
+        }
+      })
+    );
   }
 
   setup2FA(): Observable<{ qrCode: string; otpauthUrl: string }> {

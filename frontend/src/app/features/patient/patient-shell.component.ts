@@ -39,6 +39,9 @@ import { AuthService } from '../../core/services/auth.service';
           <a routerLink="/patient/review" routerLinkActive="active-link">
             <mat-icon>rate_review</mat-icon> Laisser un avis
           </a>
+          <a routerLink="/patient/profile" routerLinkActive="active-link">
+            <mat-icon>manage_accounts</mat-icon> Mon profil
+          </a>
         </div>
 
         <div class="nav-footer">

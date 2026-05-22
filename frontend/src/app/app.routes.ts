@@ -17,6 +17,11 @@ export const routes: Routes = [
     path: '2fa',
     loadComponent: () => import('./features/auth/two-factor/two-factor.component').then(m => m.TwoFactorComponent)
   },
+  {
+    path: 'complete-profile',
+    canActivate: [authGuard],
+    loadComponent: () => import('./features/auth/complete-profile/complete-profile.component').then(m => m.CompleteProfileComponent)
+  },
 
   // Patient portal
   {
@@ -33,7 +38,8 @@ export const routes: Routes = [
       { path: 'appointments', loadComponent: () => import('./features/patient/my-appointments/my-appointments.component').then(m => m.MyAppointmentsComponent) },
       { path: 'record', loadComponent: () => import('./features/patient/my-record/my-record.component').then(m => m.MyRecordComponent) },
       { path: 'invoices', loadComponent: () => import('./features/patient/my-invoices/my-invoices.component').then(m => m.MyInvoicesComponent) },
-      { path: 'review', loadComponent: () => import('./features/patient/leave-review/leave-review.component').then(m => m.LeaveReviewComponent) }
+      { path: 'review', loadComponent: () => import('./features/patient/leave-review/leave-review.component').then(m => m.LeaveReviewComponent) },
+      { path: 'profile', loadComponent: () => import('./features/patient/profile/profile.component').then(m => m.PatientProfileComponent) }
     ]
   },
 

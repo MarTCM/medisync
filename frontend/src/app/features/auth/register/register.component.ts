@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
@@ -7,6 +7,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { AuthService } from '../../../core/services/auth.service';
+import { GoogleAuthService } from '../../../core/services/google-auth.service';
 
 @Component({
   selector: 'app-register',
@@ -53,6 +54,19 @@ import { AuthService } from '../../../core/services/auth.service';
             </mat-form-field>
 
             <mat-form-field class="full-width" appearance="outline">
+              <mat-label>N° de sécurité sociale (CIN)</mat-label>
+              <mat-icon matPrefix style="margin-right:6px;color:var(--text-faint)">badge</mat-icon>
+              <input matInput formControlName="socialSecurityNumber" autocomplete="off">
+              <mat-hint>Utilisable comme identifiant de connexion</mat-hint>
+            </mat-form-field>
+
+            <mat-form-field class="full-width" appearance="outline">
+              <mat-label>Téléphone (optionnel)</mat-label>
+              <mat-icon matPrefix style="margin-right:6px;color:var(--text-faint)">phone</mat-icon>
+              <input matInput formControlName="phoneNumber" autocomplete="tel">
+            </mat-form-field>
+
+            <mat-form-field class="full-width" appearance="outline">
               <mat-label>Mot de passe</mat-label>
               <mat-icon matPrefix style="margin-right:6px;color:var(--text-faint)">lock</mat-icon>
               <input matInput [type]="showPwd ? 'text' : 'password'" formControlName="password" autocomplete="new-password">
@@ -71,27 +85,58 @@ import { AuthService } from '../../../core/services/auth.service';
             </button>
           </form>
 
+          <div class="auth-divider"><span>ou inscrivez-vous avec</span></div>
+
+          <div #googleBtn class="google-btn-container"></div>
+
           <div class="auth-link">
             Déjà un compte ? <a routerLink="/login">Se connecter</a>
           </div>
         </div>
       </div>
     </div>
-  `
+  `,
+  styles: [`
+    .auth-divider {
+      display: flex; align-items: center; gap: 12px;
+      color: var(--text-faint); font-size: 12px; margin: 18px 0 12px;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: ''; flex: 1; height: 1px; background: var(--border, #e2e8f0);
+    }
+    .google-btn-container {
+      display: flex; justify-content: center; min-height: 44px; margin-bottom: 8px;
+    }
+  `]
 })
-export class RegisterComponent {
+export class RegisterComponent implements AfterViewInit {
+  @ViewChild('googleBtn') googleBtn?: ElementRef<HTMLDivElement>;
+
   form: FormGroup;
   loading = false;
   error = '';
   showPwd = false;
 
-  constructor(private fb: FormBuilder, private auth: AuthService, private router: Router) {
+  constructor(
+    private fb: FormBuilder,
+    private auth: AuthService,
+    private router: Router,
+    private googleAuth: GoogleAuthService
+  ) {
     this.form = this.fb.group({
       firstName: ['', Validators.required],
       lastName:  ['', Validators.required],
       email:     ['', [Validators.required, Validators.email]],
+      socialSecurityNumber: ['', [Validators.required, Validators.minLength(6)]],
+      phoneNumber: [''],
       password:  ['', [Validators.required, Validators.minLength(8)]]
     });
+  }
+
+  ngAfterViewInit(): void {
+    if (this.googleBtn) {
+      this.googleAuth.renderButton(this.googleBtn.nativeElement, idToken => this.onGoogleCredential(idToken), 'signup_with');
+    }
   }
 
   onSubmit(): void {
@@ -99,8 +144,34 @@ export class RegisterComponent {
     this.loading = true;
     this.error = '';
     this.auth.register({ ...this.form.value, role: 'patient' }).subscribe({
-      next: () => { this.loading = false; this.router.navigate(['/patient']); },
+      next: res => {
+        this.loading = false;
+        if (res.account && res.account.profileCompleted === false) {
+          this.router.navigate(['/complete-profile']);
+        } else {
+          this.router.navigate(['/patient']);
+        }
+      },
       error: err => { this.loading = false; this.error = err.error?.details || err.error?.message || 'Erreur lors de la création du compte.'; }
+    });
+  }
+
+  private onGoogleCredential(idToken: string): void {
+    this.loading = true;
+    this.error = '';
+    this.auth.googleLogin(idToken).subscribe({
+      next: res => {
+        this.loading = false;
+        if (res.account && res.account.profileCompleted === false) {
+          this.router.navigate(['/complete-profile']);
+        } else {
+          this.router.navigate(['/patient']);
+        }
+      },
+      error: err => {
+        this.loading = false;
+        this.error = err.error?.message || 'Échec de la connexion Google.';
+      }
     });
   }
 }

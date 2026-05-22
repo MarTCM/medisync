@@ -40,8 +40,18 @@ router.post('/2fa/verify',
   authController.verify2FA
 );
 
-// Profil du patient connecté (retourne dependents)
+// Profil du compte connecté
 router.get('/me', protect, authController.getMe);
+router.patch('/me', protect, authController.updatePatientProfile);
+
+// Complétion du profil (patients Google OAuth)
+router.post('/complete-profile', protect,
+  body('socialSecurityNumber').notEmpty().withMessage('Numéro de sécurité sociale requis.'),
+  body('firstName').notEmpty().withMessage('Prénom requis.'),
+  body('lastName').notEmpty().withMessage('Nom requis.'),
+  validate,
+  authController.completeProfile
+);
 
 // 2FA — Configuration (admin connecté)
 router.post('/2fa/setup', protect, authController.setup2FA);

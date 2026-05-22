@@ -34,6 +34,12 @@ const accountSchema = new mongoose.Schema({
   twoFactorSecret: {
     type: String
   },
+  // false for patient accounts created via Google OAuth that haven't yet
+  // filled their social security number and personal info
+  profileCompleted: {
+    type: Boolean,
+    default: true
+  },
 }, { timestamps: true });
 
 accountSchema.index({ role: 1 });

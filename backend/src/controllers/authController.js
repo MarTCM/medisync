@@ -1,5 +1,7 @@
 const Account = require('../models/Account');
 const PatientProfile = require('../models/PatientProfile');
+const DoctorProfile = require('../models/DoctorProfile');
+const SecretaryProfile = require('../models/SecretaryProfile');
 const jwt = require('jsonwebtoken');
 const speakeasy = require('speakeasy');
 const qrcode = require('qrcode');
@@ -17,10 +19,15 @@ const generateToken = (id, expiresIn = process.env.JWT_EXPIRES_IN || '1d') => {
 // ==========================================
 exports.register = async (req, res) => {
   try {
-    const { email, socialSecurityNumber, password, role, firstName, lastName } = req.body;
+    const { email, socialSecurityNumber, password, role, firstName, lastName, phoneNumber } = req.body;
 
     if (!email && !socialSecurityNumber) {
       return res.status(400).json({ message: "Veuillez fournir un email ou un numéro de sécurité sociale." });
+    }
+
+    // Patients must provide their social security number (CIN) at signup
+    if (role === 'patient' && !socialSecurityNumber) {
+      return res.status(400).json({ message: "Le numéro de sécurité sociale (CIN) est obligatoire pour les patients." });
     }
 
     const query = [];
@@ -40,7 +47,7 @@ exports.register = async (req, res) => {
         await Account.findByIdAndDelete(account._id);
         return res.status(400).json({ message: "Le prénom et le nom sont obligatoires pour un patient." });
       }
-      profile = await PatientProfile.create({ account: account._id, firstName, lastName });
+      profile = await PatientProfile.create({ account: account._id, firstName, lastName, phoneNumber });
     }
 
     // Audit log (req.user may not exist for self-registration — use account directly)
@@ -53,7 +60,7 @@ exports.register = async (req, res) => {
     res.status(201).json({
       message: "Compte créé avec succès",
       token,
-      account: { id: account._id, role: account.role },
+      account: { id: account._id, role: account.role, profileCompleted: account.profileCompleted },
       profile
     });
 
@@ -105,7 +112,7 @@ exports.login = async (req, res) => {
     res.status(200).json({
       message: "Connexion réussie",
       token,
-      account: { id: account._id, role: account.role }
+      account: { id: account._id, role: account.role, profileCompleted: account.profileCompleted }
     });
 
   } catch (error) {
@@ -131,17 +138,25 @@ exports.googleLogin = async (req, res) => {
     const { sub: googleId, email, given_name: firstName, family_name: lastName } = payload;
 
     let account = await Account.findOne({ $or: [{ googleId }, { email }] });
+    let isNewAccount = false;
 
     if (!account) {
-      account = await Account.create({ email, googleId, role: 'patient' });
+      // New Google-OAuth patient — profile is incomplete until SSN is filled
+      account = await Account.create({
+        email,
+        googleId,
+        role: 'patient',
+        profileCompleted: false
+      });
       await PatientProfile.create({
         account: account._id,
         firstName: firstName || 'Prénom',
         lastName: lastName || 'Nom'
       });
+      isNewAccount = true;
     } else if (!account.googleId) {
       account.googleId = googleId;
-      await account.save();
+      await account.save({ validateModifiedOnly: true });
     }
 
     try {
@@ -152,7 +167,8 @@ exports.googleLogin = async (req, res) => {
     res.status(200).json({
       message: "Connexion Google réussie",
       token,
-      account: { id: account._id, role: account.role }
+      account: { id: account._id, role: account.role, profileCompleted: account.profileCompleted },
+      isNewAccount
     });
 
   } catch (error) {
@@ -165,11 +181,49 @@ exports.googleLogin = async (req, res) => {
 // ==========================================
 exports.getMe = async (req, res) => {
   try {
+    let profile = null;
     if (req.user.role === 'patient') {
-      const profile = await PatientProfile.findOne({ account: req.user.id });
-      return res.status(200).json({ profile });
+      profile = await PatientProfile.findOne({ account: req.user.id });
+    } else if (req.user.role === 'medecin') {
+      profile = await DoctorProfile.findOne({ account: req.user.id });
+    } else if (req.user.role === 'secretaire') {
+      profile = await SecretaryProfile.findOne({ account: req.user.id });
     }
-    res.status(200).json({ profile: null });
+    return res.status(200).json({ profile });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur serveur", error: error.message });
+  }
+};
+
+// ==========================================
+// MISE À JOUR DU PROFIL PATIENT (PATCH /api/auth/me)
+// ==========================================
+exports.updatePatientProfile = async (req, res) => {
+  try {
+    if (req.user.role !== 'patient') {
+      return res.status(403).json({ message: "Réservé aux patients." });
+    }
+    const { firstName, lastName, phoneNumber, socialSecurityNumber } = req.body;
+
+    // Update socialSecurityNumber on the Account if provided
+    if (socialSecurityNumber !== undefined) {
+      const dup = await Account.findOne({ socialSecurityNumber, _id: { $ne: req.user.id } });
+      if (dup) return res.status(409).json({ message: "Ce numéro de sécurité sociale est déjà utilisé." });
+      await Account.findByIdAndUpdate(req.user.id, { socialSecurityNumber }, { runValidators: true });
+    }
+
+    const profileUpdates = {};
+    if (firstName !== undefined) profileUpdates.firstName = firstName;
+    if (lastName !== undefined) profileUpdates.lastName = lastName;
+    if (phoneNumber !== undefined) profileUpdates.phoneNumber = phoneNumber;
+
+    const profile = await PatientProfile.findOneAndUpdate(
+      { account: req.user.id },
+      profileUpdates,
+      { new: true, runValidators: true }
+    );
+    if (!profile) return res.status(404).json({ message: "Profil introuvable." });
+    res.status(200).json({ profile });
   } catch (error) {
     res.status(500).json({ message: "Erreur serveur", error: error.message });
   }
@@ -277,11 +331,63 @@ exports.verify2FA = async (req, res) => {
     res.status(200).json({
       message: "Authentification 2FA réussie",
       token,
-      account: { id: account._id, role: account.role }
+      account: { id: account._id, role: account.role, profileCompleted: account.profileCompleted }
     });
 
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la vérification 2FA", error: error.message });
+  }
+};
+
+// ==========================================
+// COMPLETION DE PROFIL (POST /api/auth/complete-profile)
+// Utilisé par les patients ayant créé leur compte via Google OAuth
+// pour fournir leur N° de sécurité sociale et leurs informations personnelles.
+// ==========================================
+exports.completeProfile = async (req, res) => {
+  try {
+    const { socialSecurityNumber, firstName, lastName, phoneNumber } = req.body;
+
+    if (!socialSecurityNumber || !firstName || !lastName) {
+      return res.status(400).json({
+        message: "Le numéro de sécurité sociale, le prénom et le nom sont obligatoires."
+      });
+    }
+
+    const account = await Account.findById(req.user.id);
+    if (!account) {
+      return res.status(404).json({ message: "Compte introuvable." });
+    }
+    if (account.role !== 'patient') {
+      return res.status(403).json({ message: "Cette opération est réservée aux patients." });
+    }
+
+    // SSN must be unique across accounts
+    const existing = await Account.findOne({
+      socialSecurityNumber,
+      _id: { $ne: account._id }
+    });
+    if (existing) {
+      return res.status(400).json({ message: "Ce numéro de sécurité sociale est déjà utilisé." });
+    }
+
+    account.socialSecurityNumber = socialSecurityNumber;
+    account.profileCompleted = true;
+    await account.save({ validateModifiedOnly: true });
+
+    const profile = await PatientProfile.findOneAndUpdate(
+      { account: account._id },
+      { firstName, lastName, phoneNumber },
+      { new: true, upsert: true }
+    );
+
+    res.status(200).json({
+      message: "Profil complété avec succès",
+      account: { id: account._id, role: account.role, profileCompleted: true },
+      profile
+    });
+  } catch (error) {
+    res.status(400).json({ message: "Erreur lors de la complétion du profil", details: error.message });
   }
 };
 

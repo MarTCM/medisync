@@ -25,6 +25,9 @@ router.get('/', protect, authorize('secretaire', 'administrateur'), appointmentC
 // Historique des rendez-vous du patient connecté
 router.get('/my-appointments', protect, authorize('patient'), appointmentController.getMyAppointments);
 
+// Créneaux disponibles d'un médecin à une date donnée
+router.get('/available-slots', protect, authorize('patient', 'secretaire', 'administrateur'), appointmentController.getAvailableSlots);
+
 // Planning journalier du médecin connecté
 router.get('/doctor/daily', protect, authorize('medecin'), appointmentController.getDoctorDailySchedule);
 
