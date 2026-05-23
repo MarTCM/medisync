@@ -3,10 +3,23 @@ const PatientProfile = require('../models/PatientProfile');
 const DoctorProfile = require('../models/DoctorProfile');
 const { sendNotification } = require('../utils/emailService');
 
+// Resolve dependent info from a populated patient object and attach it to each appointment plain object
+function enrichWithDependent(appointments) {
+  return appointments.map(apt => {
+    const obj = apt.toObject ? apt.toObject() : apt;
+    if (obj.dependentId && obj.patient && obj.patient.dependents) {
+      const dep = obj.patient.dependents.find(d => String(d._id) === String(obj.dependentId));
+      if (dep) obj.dependentInfo = dep;
+    }
+    return obj;
+  });
+}
+
 // 1. Créer un nouveau rendez-vous
 exports.createAppointment = async (req, res) => {
   try {
-    const { doctorId, dependentId, date, time, duration, notes, reason } = req.body;
+    const { doctorId, date, time, duration, notes, reason, newDependent } = req.body;
+    let { dependentId } = req.body;
 
     let targetPatientProfile;
     if (req.user.role === 'secretaire' || req.user.role === 'administrateur') {
@@ -22,6 +35,21 @@ exports.createAppointment = async (req, res) => {
 
     if (!targetPatientProfile) {
       return res.status(404).json({ message: "Profil patient introuvable." });
+    }
+
+    // If booking for a new third party, create the dependent and use its _id
+    if (!dependentId && newDependent && newDependent.firstName && newDependent.lastName) {
+      const dep = {
+        firstName: newDependent.firstName,
+        lastName: newDependent.lastName,
+        dateOfBirth: newDependent.dateOfBirth,
+        relation: newDependent.relation || 'enfant',
+        allergies: Array.isArray(newDependent.allergies) ? newDependent.allergies : [],
+        notes: newDependent.notes || ''
+      };
+      targetPatientProfile.dependents.push(dep);
+      await targetPatientProfile.save();
+      dependentId = targetPatientProfile.dependents[targetPatientProfile.dependents.length - 1]._id;
     }
 
     const validDurations = [15, 30, 60];
@@ -89,14 +117,14 @@ exports.getAllAppointments = async (req, res) => {
     }
 
     const appointments = await Appointment.find(filter)
-      .populate('patient', 'firstName lastName')
+      .populate('patient', 'firstName lastName dateOfBirth dependents')
       .populate('doctor', 'firstName lastName specialties baseFee')
       .sort({ startTime: 1 });
 
     res.status(200).json({
       message: "Planning récupéré avec succès",
       total: appointments.length,
-      appointments
+      appointments: enrichWithDependent(appointments)
     });
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la récupération du planning", error: error.message });
@@ -112,10 +140,11 @@ exports.getMyAppointments = async (req, res) => {
     }
 
     const appointments = await Appointment.find({ patient: patientProfile._id })
+      .populate('patient', 'firstName lastName dateOfBirth dependents')
       .populate('doctor', 'firstName lastName specialties')
       .sort({ startTime: -1 });
 
-    res.status(200).json(appointments);
+    res.status(200).json(enrichWithDependent(appointments));
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la récupération des rendez-vous", error: error.message });
   }
@@ -304,15 +333,9 @@ exports.getDoctorDailySchedule = async (req, res) => {
       doctor: doctorProfile._id,
       startTime: { $gte: startOfDay, $lte: endOfDay },
       status: { $ne: 'annulé' }
-    }).populate('patient', 'firstName lastName phoneNumber');
+    }).populate('patient', 'firstName lastName phoneNumber dateOfBirth dependents');
 
-    console.log(`[calendar] account=${req.user.id} doctorProfile=${doctorProfile._id} date=${date} found=${schedule.length}`);
-    if (schedule.length === 0) {
-      const allThatDay = await Appointment.find({ startTime: { $gte: startOfDay, $lte: endOfDay } }, 'doctor status reason');
-      console.log(`[calendar-debug] all appts that day (any doctor):`, JSON.stringify(allThatDay));
-    }
-
-    res.status(200).json(schedule);
+    res.status(200).json(enrichWithDependent(schedule));
   } catch (error) {
     res.status(500).json({ message: "Erreur lors de la récupération du planning", error: error.message });
   }

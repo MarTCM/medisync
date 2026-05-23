@@ -9,8 +9,11 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
 import { MatNativeDateModule } from '@angular/material/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatRadioModule } from '@angular/material/radio';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatChipsModule, MatChipInputEvent } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { Subscription } from 'rxjs';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -25,7 +28,8 @@ interface TimeSlot { time: string; available: boolean; }
   imports: [CommonModule, ReactiveFormsModule,
     MatFormFieldModule, MatInputModule, MatSelectModule,
     MatDatepickerModule, MatNativeDateModule,
-    MatButtonModule, MatRadioModule, MatIconModule, MatProgressSpinnerModule],
+    MatButtonModule, MatRadioModule, MatCheckboxModule, MatChipsModule,
+    MatIconModule, MatProgressSpinnerModule],
   template: `
     <div class="page-container" style="max-width:680px">
       <div class="page-header">
@@ -51,16 +55,97 @@ interface TimeSlot { time: string; available: boolean; }
       <div style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);padding:28px;box-shadow:var(--shadow-sm)">
         <form [formGroup]="form" (ngSubmit)="onSubmit()">
 
-          <!-- Dependent selector (only if patient has dependents) -->
-          <mat-form-field class="full-width" *ngIf="dependents.length">
-            <mat-label>Pour qui est ce rendez-vous ?</mat-label>
-            <mat-select formControlName="dependentId">
-              <mat-option value="">Moi-même</mat-option>
-              <mat-option *ngFor="let d of dependents" [value]="d._id">
-                {{ d.firstName }} {{ d.lastName }} ({{ d.relation }})
-              </mat-option>
-            </mat-select>
-          </mat-form-field>
+          <!-- "Not for me" toggle -->
+          <div style="margin-bottom:20px;padding:14px 16px;border-radius:var(--radius);border:1px solid var(--border);background:var(--surface-2)">
+            <mat-checkbox formControlName="notForSelf" (change)="onNotForSelfChange()">
+              <span style="font-size:14px;font-weight:500">Ce rendez-vous n'est pas pour moi</span>
+            </mat-checkbox>
+            <div *ngIf="form.get('notForSelf')?.value" style="font-size:12px;color:var(--text-muted);margin-top:4px;margin-left:28px">
+              Le rendez-vous sera pris pour un tiers (enfant, proche dépendant, etc.)
+            </div>
+          </div>
+
+          <!-- Third-party section -->
+          <div *ngIf="form.get('notForSelf')?.value" style="margin-bottom:20px;padding:16px;border-radius:var(--radius);border:1.5px solid var(--primary);background:var(--primary-light)">
+            <div style="font-size:12px;font-weight:600;color:var(--primary);margin-bottom:14px;text-transform:uppercase;letter-spacing:0.5px;display:flex;align-items:center;gap:6px">
+              <mat-icon style="font-size:16px;width:16px;height:16px">group</mat-icon>
+              Informations sur le tiers
+            </div>
+
+            <!-- Existing dependents picker (shown when there are saved dependents) -->
+            <mat-form-field class="full-width" *ngIf="dependents.length" style="margin-bottom:8px">
+              <mat-label>Sélectionner un tiers enregistré</mat-label>
+              <mat-select formControlName="dependentId" (selectionChange)="onDependentSelect($event.value)">
+                <mat-option value="">Autre personne (saisir manuellement)</mat-option>
+                <mat-option *ngFor="let d of dependents" [value]="d._id">
+                  {{ d.firstName }} {{ d.lastName }}
+                  <span style="color:var(--text-muted);font-size:12px"> — {{ d.relation }}{{ d.dateOfBirth ? ', ' + getAge(d.dateOfBirth) + ' ans' : '' }}</span>
+                </mat-option>
+              </mat-select>
+            </mat-form-field>
+
+            <!-- New third-party form (shown when no dependents OR "Autre personne" chosen) -->
+            <div *ngIf="showNewThirdPartyForm" [formGroup]="thirdPartyForm">
+              <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px">
+                <mat-form-field class="full-width" appearance="outline">
+                  <mat-label>Prénom</mat-label>
+                  <input matInput formControlName="firstName">
+                  <mat-error *ngIf="thirdPartyForm.get('firstName')?.hasError('required')">Obligatoire</mat-error>
+                </mat-form-field>
+                <mat-form-field class="full-width" appearance="outline">
+                  <mat-label>Nom</mat-label>
+                  <input matInput formControlName="lastName">
+                  <mat-error *ngIf="thirdPartyForm.get('lastName')?.hasError('required')">Obligatoire</mat-error>
+                </mat-form-field>
+              </div>
+              <mat-form-field class="full-width" appearance="outline">
+                <mat-label>Date de naissance</mat-label>
+                <mat-icon matPrefix style="margin-right:6px;color:var(--text-faint)">cake</mat-icon>
+                <input matInput [matDatepicker]="thirdPartyDob" formControlName="dateOfBirth" [max]="today" placeholder="JJ/MM/AAAA">
+                <mat-datepicker-toggle matIconSuffix [for]="thirdPartyDob"></mat-datepicker-toggle>
+                <mat-datepicker #thirdPartyDob startView="multi-year"></mat-datepicker>
+                <mat-hint *ngIf="computedAge !== null" style="color:var(--primary);font-weight:500">
+                  {{ computedAge }} ans
+                </mat-hint>
+                <mat-error *ngIf="thirdPartyForm.get('dateOfBirth')?.hasError('required')">Obligatoire</mat-error>
+              </mat-form-field>
+              <mat-form-field class="full-width" appearance="outline">
+                <mat-label>Lien de parenté</mat-label>
+                <mat-icon matPrefix style="margin-right:6px;color:var(--text-faint)">family_restroom</mat-icon>
+                <mat-select formControlName="relation">
+                  <mat-option value="enfant">Enfant</mat-option>
+                  <mat-option value="conjoint">Conjoint(e)</mat-option>
+                  <mat-option value="parent">Parent</mat-option>
+                </mat-select>
+                <mat-error *ngIf="thirdPartyForm.get('relation')?.hasError('required')">Obligatoire</mat-error>
+              </mat-form-field>
+
+              <!-- Allergies chip input -->
+              <mat-form-field class="full-width" appearance="outline">
+                <mat-label>Allergies (Entrée ou virgule pour ajouter)</mat-label>
+                <mat-icon matPrefix style="margin-right:6px;color:var(--text-faint)">warning</mat-icon>
+                <mat-chip-grid #thirdPartyAllergyGrid>
+                  <mat-chip-row *ngFor="let a of thirdPartyAllergies" (removed)="removeThirdPartyAllergy(a)" color="warn" highlighted>
+                    {{ a }}
+                    <button matChipRemove><mat-icon>cancel</mat-icon></button>
+                  </mat-chip-row>
+                </mat-chip-grid>
+                <input [matChipInputFor]="thirdPartyAllergyGrid"
+                  [matChipInputSeparatorKeyCodes]="separatorKeys"
+                  (matChipInputTokenEnd)="addThirdPartyAllergy($event)"
+                  placeholder="ex: Pénicilline…">
+                <mat-hint>Optionnel — aide le médecin à préparer la consultation</mat-hint>
+              </mat-form-field>
+
+              <!-- Notes -->
+              <mat-form-field class="full-width" appearance="outline">
+                <mat-label>Informations médicales utiles (optionnel)</mat-label>
+                <mat-icon matPrefix style="margin-right:6px;color:var(--text-faint)">notes</mat-icon>
+                <textarea matInput formControlName="notes" rows="2"
+                  placeholder="Antécédents, traitements en cours, motif spécifique…"></textarea>
+              </mat-form-field>
+            </div>
+          </div>
 
           <!-- Duration -->
           <div style="margin-bottom:20px">
@@ -140,7 +225,7 @@ interface TimeSlot { time: string; available: boolean; }
           <div style="display:flex;gap:12px;justify-content:flex-end;margin-top:8px">
             <button mat-stroked-button type="button" (click)="goBack()">Retour</button>
             <button mat-raised-button color="primary" type="submit"
-              [disabled]="loading || form.invalid || !selectedTime"
+              [disabled]="loading || form.invalid || !selectedTime || !thirdPartyValid"
               style="min-width:180px">
               {{ loading ? 'Réservation…' : 'Confirmer le rendez-vous' }}
             </button>
@@ -183,16 +268,22 @@ interface TimeSlot { time: string; available: boolean; }
 })
 export class BookAppointmentComponent implements OnInit, OnDestroy {
   form: FormGroup;
+  thirdPartyForm: FormGroup;
   doctor?: DoctorProfile;
   dependents: any[] = [];
   loading = false;
   error = '';
   success = '';
   minDate = new Date();
+  today = new Date();
 
   slots: TimeSlot[] = [];
   loadingSlots = false;
   selectedTime = '';
+
+  showNewThirdPartyForm = false;
+  thirdPartyAllergies: string[] = [];
+  readonly separatorKeys = [ENTER, COMMA] as const;
 
   private subs: Subscription[] = [];
 
@@ -208,7 +299,16 @@ export class BookAppointmentComponent implements OnInit, OnDestroy {
       duration:    [30, Validators.required],
       reason:      ['consultation générale', Validators.required],
       notes:       [''],
+      notForSelf:  [false],
       dependentId: ['']
+    });
+
+    this.thirdPartyForm = this.fb.group({
+      firstName:   ['', Validators.required],
+      lastName:    ['', Validators.required],
+      dateOfBirth: ['', Validators.required],
+      relation:    ['enfant', Validators.required],
+      notes:       ['']
     });
   }
 
@@ -228,12 +328,72 @@ export class BookAppointmentComponent implements OnInit, OnDestroy {
       this.form.get('duration')!.valueChanges.subscribe(() => {
         this.clearSlotSelection();
         this.fetchSlots();
-      })
+      }),
+      this.thirdPartyForm.get('dateOfBirth')!.valueChanges.subscribe(() => {})
     );
   }
 
   ngOnDestroy(): void {
     this.subs.forEach(s => s.unsubscribe());
+  }
+
+  get computedAge(): number | null {
+    const dob = this.thirdPartyForm.get('dateOfBirth')?.value;
+    if (!dob) return null;
+    const birth = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age >= 0 ? age : null;
+  }
+
+  get thirdPartyValid(): boolean {
+    if (!this.form.get('notForSelf')?.value) return true;
+    const depId = this.form.get('dependentId')?.value;
+    if (depId) return true;
+    return this.thirdPartyForm.valid;
+  }
+
+  getAge(dateOfBirth: string): number {
+    const birth = new Date(dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  }
+
+  onNotForSelfChange(): void {
+    const notForSelf = this.form.get('notForSelf')?.value;
+    if (!notForSelf) {
+      this.form.patchValue({ dependentId: '' }, { emitEvent: false });
+      this.showNewThirdPartyForm = false;
+      this.thirdPartyAllergies = [];
+      this.thirdPartyForm.reset({ firstName: '', lastName: '', dateOfBirth: '', relation: 'enfant', notes: '' });
+    } else {
+      // If no saved dependents, go straight to manual form
+      this.showNewThirdPartyForm = this.dependents.length === 0;
+    }
+  }
+
+  onDependentSelect(value: string): void {
+    // '' means "Autre personne" — show manual form
+    this.showNewThirdPartyForm = !value;
+    if (!value) {
+      this.thirdPartyForm.reset({ firstName: '', lastName: '', dateOfBirth: '', relation: 'enfant', notes: '' });
+      this.thirdPartyAllergies = [];
+    }
+  }
+
+  addThirdPartyAllergy(event: MatChipInputEvent): void {
+    const value = (event.value || '').trim();
+    if (value) this.thirdPartyAllergies.push(value);
+    event.chipInput!.clear();
+  }
+
+  removeThirdPartyAllergy(item: string): void {
+    this.thirdPartyAllergies = this.thirdPartyAllergies.filter(a => a !== item);
   }
 
   private clearSlotSelection(): void {
@@ -270,13 +430,29 @@ export class BookAppointmentComponent implements OnInit, OnDestroy {
   goBack(): void { this.router.navigate(['/patient/search']); }
 
   onSubmit(): void {
-    if (this.form.invalid || !this.doctor || !this.selectedTime) return;
+    if (this.form.invalid || !this.doctor || !this.selectedTime || !this.thirdPartyValid) return;
     this.loading = true;
     this.error = '';
-    const { date, time, duration, reason, notes, dependentId } = this.form.value;
+    const { date, time, duration, reason, notes, notForSelf, dependentId } = this.form.value;
     const dateStr = toLocalDateString(new Date(date));
     const payload: any = { doctorId: this.doctor._id, date: dateStr, time, duration, reason, notes };
-    if (dependentId) payload.dependentId = dependentId;
+
+    if (notForSelf) {
+      if (dependentId) {
+        payload.dependentId = dependentId;
+      } else {
+        const tp = this.thirdPartyForm.value;
+        payload.newDependent = {
+          firstName: tp.firstName,
+          lastName: tp.lastName,
+          dateOfBirth: tp.dateOfBirth ? new Date(tp.dateOfBirth).toISOString() : undefined,
+          relation: tp.relation,
+          allergies: this.thirdPartyAllergies.length ? this.thirdPartyAllergies : undefined,
+          notes: tp.notes || undefined
+        };
+      }
+    }
+
     this.apptSvc.create(payload).subscribe({
       next: () => {
         this.loading = false;

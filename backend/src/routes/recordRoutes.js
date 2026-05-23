@@ -9,6 +9,9 @@ const upload = require('../middleware/upload');
 // Médecin : ajouter une consultation au dossier
 router.post('/', auth.protect, authorize('medecin'), recordController.addConsultation);
 
+// Patient : mettre à jour ses antécédents et allergies
+router.patch('/my-record', auth.protect, authorize('patient'), recordController.updateMyRecord);
+
 // Patient : téléverser un document médical
 router.post('/upload', auth.protect, authorize('patient'), upload.single('document'), recordController.uploadDocument);
 

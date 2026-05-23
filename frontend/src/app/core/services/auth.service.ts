@@ -80,6 +80,7 @@ export class AuthService {
   updatePatientProfile(payload: {
     firstName?: string;
     lastName?: string;
+    dateOfBirth?: string;
     phoneNumber?: string;
     socialSecurityNumber?: string;
   }): Observable<{ profile: any }> {
@@ -90,6 +91,7 @@ export class AuthService {
     socialSecurityNumber: string;
     firstName: string;
     lastName: string;
+    dateOfBirth?: string;
     phoneNumber?: string;
   }): Observable<{ account: Account; profile: any }> {
     return this.http.post<{ account: Account; profile: any }>(

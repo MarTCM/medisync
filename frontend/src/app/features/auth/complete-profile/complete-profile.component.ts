@@ -7,6 +7,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
@@ -14,7 +16,8 @@ import { AuthService } from '../../../core/services/auth.service';
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule,
     MatFormFieldModule, MatInputModule, MatButtonModule,
-    MatIconModule, MatProgressSpinnerModule],
+    MatIconModule, MatProgressSpinnerModule,
+    MatDatepickerModule, MatNativeDateModule],
   template: `
     <div class="auth-layout">
       <div class="auth-brand">
@@ -25,6 +28,7 @@ import { AuthService } from '../../../core/services/auth.service';
           <div class="brand-features">
             <div class="feature-item"><mat-icon>badge</mat-icon> Votre N° de sécurité sociale (CIN)</div>
             <div class="feature-item"><mat-icon>person</mat-icon> Vos noms officiels</div>
+            <div class="feature-item"><mat-icon>cake</mat-icon> Votre date de naissance</div>
             <div class="feature-item"><mat-icon>phone</mat-icon> Un numéro de téléphone (optionnel)</div>
             <div class="feature-item"><mat-icon>lock</mat-icon> Données chiffrées et confidentielles</div>
           </div>
@@ -47,6 +51,15 @@ import { AuthService } from '../../../core/services/auth.service';
                 <input matInput formControlName="lastName">
               </mat-form-field>
             </div>
+
+            <mat-form-field class="full-width" appearance="outline">
+              <mat-label>Date de naissance</mat-label>
+              <mat-icon matPrefix style="margin-right:6px;color:var(--text-faint)">cake</mat-icon>
+              <input matInput [matDatepicker]="dobPicker" formControlName="dateOfBirth" [max]="today" placeholder="JJ/MM/AAAA">
+              <mat-datepicker-toggle matIconSuffix [for]="dobPicker"></mat-datepicker-toggle>
+              <mat-datepicker #dobPicker startView="multi-year"></mat-datepicker>
+              <mat-error *ngIf="form.get('dateOfBirth')?.hasError('required')">Obligatoire</mat-error>
+            </mat-form-field>
 
             <mat-form-field class="full-width" appearance="outline">
               <mat-label>N° de sécurité sociale (CIN)</mat-label>
@@ -83,6 +96,7 @@ export class CompleteProfileComponent implements OnInit {
   form: FormGroup;
   loading = false;
   error = '';
+  today = new Date();
 
   constructor(
     private fb: FormBuilder,
@@ -92,13 +106,13 @@ export class CompleteProfileComponent implements OnInit {
     this.form = this.fb.group({
       firstName: ['', Validators.required],
       lastName: ['', Validators.required],
+      dateOfBirth: ['', Validators.required],
       socialSecurityNumber: ['', [Validators.required, Validators.minLength(6)]],
       phoneNumber: ['']
     });
   }
 
   ngOnInit(): void {
-    // Prefill firstName/lastName if we already have a profile from Google
     this.auth.getMe().subscribe({
       next: res => {
         const p = res?.profile;
@@ -106,6 +120,7 @@ export class CompleteProfileComponent implements OnInit {
           this.form.patchValue({
             firstName: p.firstName || '',
             lastName: p.lastName || '',
+            dateOfBirth: p.dateOfBirth ? new Date(p.dateOfBirth) : '',
             phoneNumber: p.phoneNumber || ''
           });
         }
@@ -118,7 +133,11 @@ export class CompleteProfileComponent implements OnInit {
     if (this.form.invalid) return;
     this.loading = true;
     this.error = '';
-    this.auth.completeProfile(this.form.value).subscribe({
+    const value = { ...this.form.value };
+    if (value.dateOfBirth) {
+      value.dateOfBirth = new Date(value.dateOfBirth).toISOString();
+    }
+    this.auth.completeProfile(value).subscribe({
       next: () => {
         this.loading = false;
         this.router.navigate(['/patient']);

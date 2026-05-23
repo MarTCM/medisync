@@ -19,7 +19,7 @@ const generateToken = (id, expiresIn = process.env.JWT_EXPIRES_IN || '1d') => {
 // ==========================================
 exports.register = async (req, res) => {
   try {
-    const { email, socialSecurityNumber, password, role, firstName, lastName, phoneNumber } = req.body;
+    const { email, socialSecurityNumber, password, role, firstName, lastName, phoneNumber, dateOfBirth } = req.body;
 
     if (!email && !socialSecurityNumber) {
       return res.status(400).json({ message: "Veuillez fournir un email ou un numéro de sécurité sociale." });
@@ -47,7 +47,7 @@ exports.register = async (req, res) => {
         await Account.findByIdAndDelete(account._id);
         return res.status(400).json({ message: "Le prénom et le nom sont obligatoires pour un patient." });
       }
-      profile = await PatientProfile.create({ account: account._id, firstName, lastName, phoneNumber });
+      profile = await PatientProfile.create({ account: account._id, firstName, lastName, phoneNumber, dateOfBirth });
     }
 
     // Audit log (req.user may not exist for self-registration — use account directly)
@@ -203,7 +203,7 @@ exports.updatePatientProfile = async (req, res) => {
     if (req.user.role !== 'patient') {
       return res.status(403).json({ message: "Réservé aux patients." });
     }
-    const { firstName, lastName, phoneNumber, socialSecurityNumber } = req.body;
+    const { firstName, lastName, phoneNumber, dateOfBirth, socialSecurityNumber } = req.body;
 
     // Update socialSecurityNumber on the Account if provided
     if (socialSecurityNumber !== undefined) {
@@ -216,6 +216,7 @@ exports.updatePatientProfile = async (req, res) => {
     if (firstName !== undefined) profileUpdates.firstName = firstName;
     if (lastName !== undefined) profileUpdates.lastName = lastName;
     if (phoneNumber !== undefined) profileUpdates.phoneNumber = phoneNumber;
+    if (dateOfBirth !== undefined) profileUpdates.dateOfBirth = dateOfBirth;
 
     const profile = await PatientProfile.findOneAndUpdate(
       { account: req.user.id },
@@ -346,7 +347,7 @@ exports.verify2FA = async (req, res) => {
 // ==========================================
 exports.completeProfile = async (req, res) => {
   try {
-    const { socialSecurityNumber, firstName, lastName, phoneNumber } = req.body;
+    const { socialSecurityNumber, firstName, lastName, phoneNumber, dateOfBirth } = req.body;
 
     if (!socialSecurityNumber || !firstName || !lastName) {
       return res.status(400).json({
@@ -375,9 +376,11 @@ exports.completeProfile = async (req, res) => {
     account.profileCompleted = true;
     await account.save({ validateModifiedOnly: true });
 
+    const profileUpdate = { firstName, lastName, phoneNumber };
+    if (dateOfBirth !== undefined) profileUpdate.dateOfBirth = dateOfBirth;
     const profile = await PatientProfile.findOneAndUpdate(
       { account: account._id },
-      { firstName, lastName, phoneNumber },
+      profileUpdate,
       { new: true, upsert: true }
     );
 

@@ -56,6 +56,11 @@ import { Appointment } from '../../../core/models';
                 <ng-container *ngIf="isObj(apt.doctor)">Dr. {{ $any(apt.doctor).firstName }} {{ $any(apt.doctor).lastName }}</ng-container>
                 <span *ngIf="!isObj(apt.doctor)" style="color:var(--text-muted)">Médecin</span>
               </div>
+              <!-- Third-party badge -->
+              <div *ngIf="apt.dependentInfo" style="display:inline-flex;align-items:center;gap:5px;margin-top:3px;padding:2px 8px;background:var(--primary-light);border-radius:10px;font-size:12px;color:var(--primary);font-weight:500">
+                <mat-icon style="font-size:13px;width:13px;height:13px">group</mat-icon>
+                Pour : {{ apt.dependentInfo.firstName }} {{ apt.dependentInfo.lastName }}{{ apt.dependentInfo.dateOfBirth ? ' · ' + getAge(apt.dependentInfo.dateOfBirth) + ' ans' : '' }}
+              </div>
               <div class="apt-meta">
                 <mat-icon style="font-size:13px;width:13px;height:13px;vertical-align:-2px">medical_services</mat-icon>
                 {{ apt.reason }}
@@ -87,6 +92,10 @@ import { Appointment } from '../../../core/models';
               <div class="apt-name">
                 <ng-container *ngIf="isObj(apt.doctor)">Dr. {{ $any(apt.doctor).firstName }} {{ $any(apt.doctor).lastName }}</ng-container>
                 <span *ngIf="!isObj(apt.doctor)" style="color:var(--text-muted)">Médecin</span>
+              </div>
+              <div *ngIf="apt.dependentInfo" style="display:inline-flex;align-items:center;gap:5px;margin-top:3px;padding:2px 8px;background:var(--primary-light);border-radius:10px;font-size:12px;color:var(--primary);font-weight:500">
+                <mat-icon style="font-size:13px;width:13px;height:13px">group</mat-icon>
+                Pour : {{ apt.dependentInfo.firstName }} {{ apt.dependentInfo.lastName }}{{ apt.dependentInfo.dateOfBirth ? ' · ' + getAge(apt.dependentInfo.dateOfBirth) + ' ans' : '' }}
               </div>
               <div class="apt-meta">{{ apt.reason }}</div>
             </div>
@@ -138,4 +147,13 @@ export class MyAppointmentsComponent implements OnInit {
   }
 
   isObj(d: any): boolean { return d && typeof d === 'object'; }
+
+  getAge(dateOfBirth: string): number {
+    const birth = new Date(dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  }
 }

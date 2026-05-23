@@ -14,6 +14,10 @@ export class RecordService {
     return this.http.get<{ record: MedicalRecord }>(`${this.api}/my-record`);
   }
 
+  updateMyRecord(data: { history?: string[]; allergies?: string[] }): Observable<{ record: MedicalRecord }> {
+    return this.http.patch<{ record: MedicalRecord }>(`${this.api}/my-record`, data);
+  }
+
   addConsultation(data: { patientId: string; appointmentId?: string; report: string; prescriptions: any[] }): Observable<any> {
     return this.http.post(this.api, data);
   }

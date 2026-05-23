@@ -1,9 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatExpansionModule } from '@angular/material/expansion';
-import { MatChipsModule } from '@angular/material/chips';
+import { MatChipsModule, MatChipInputEvent } from '@angular/material/chips';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { RecordService } from '../../../core/services/record.service';
 import { MedicalRecord, DoctorProfile, Consultation } from '../../../core/models';
 import { environment } from '../../../../environments/environment';
@@ -11,7 +16,8 @@ import { environment } from '../../../../environments/environment';
 @Component({
   selector: 'app-my-record',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatExpansionModule, MatChipsModule],
+  imports: [CommonModule, FormsModule, MatButtonModule, MatIconModule, MatExpansionModule,
+    MatChipsModule, MatFormFieldModule, MatInputModule, MatSnackBarModule],
   template: `
     <div class="page-container">
       <div class="page-header">
@@ -29,34 +35,92 @@ import { environment } from '../../../../environments/environment';
       <div *ngIf="error" class="msg-error"><mat-icon>error_outline</mat-icon> {{ error }}</div>
 
       <!-- Tabs -->
-      <div *ngIf="record" class="tab-bar">
+      <div *ngIf="record || !loading" class="tab-bar">
         <button class="tab" [class.active]="tab === 'general'" (click)="tab = 'general'">
           Antécédents
         </button>
         <button class="tab" [class.active]="tab === 'consultations'" (click)="tab = 'consultations'">
-          Consultations ({{ record.consultations?.length || 0 }})
+          Consultations ({{ record?.consultations?.length || 0 }})
         </button>
         <button class="tab" [class.active]="tab === 'documents'" (click)="tab = 'documents'">
-          Documents ({{ record.attachments?.length || 0 }})
+          Documents ({{ record?.attachments?.length || 0 }})
         </button>
       </div>
 
-      <!-- General -->
-      <div class="card" *ngIf="record" [hidden]="tab !== 'general'">
-        <div class="card-header"><h3>Informations médicales générales</h3></div>
-        <div style="margin-bottom:16px">
-          <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px">Antécédents</div>
-          <span *ngIf="!record.history?.length" style="color:var(--text-muted);font-size:13.5px">Aucun antécédent enregistré.</span>
-          <mat-chip-set *ngIf="record.history?.length">
-            <mat-chip *ngFor="let h of record.history">{{ h }}</mat-chip>
+      <!-- General (antécédents + allergies) -->
+      <div class="card" *ngIf="!loading" [hidden]="tab !== 'general'" style="padding:24px">
+
+        <!-- Header row -->
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px">
+          <h3 style="margin:0">Informations médicales générales</h3>
+          <div style="display:flex;gap:8px">
+            <button *ngIf="!editMode" mat-stroked-button (click)="enterEdit()">
+              <mat-icon>edit</mat-icon> Modifier
+            </button>
+            <button *ngIf="editMode" mat-raised-button color="primary" (click)="saveRecord()" [disabled]="saving">
+              <mat-icon>save</mat-icon> {{ saving ? 'Enregistrement…' : 'Enregistrer' }}
+            </button>
+            <button *ngIf="editMode" mat-stroked-button (click)="cancelEdit()">Annuler</button>
+          </div>
+        </div>
+
+        <!-- Antécédents — READ MODE -->
+        <div *ngIf="!editMode" style="margin-bottom:20px">
+          <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px">Antécédents médicaux</div>
+          <span *ngIf="!record?.history?.length" style="color:var(--text-muted);font-size:13.5px">Aucun antécédent enregistré.</span>
+          <mat-chip-set *ngIf="record?.history?.length">
+            <mat-chip *ngFor="let h of record!.history">{{ h }}</mat-chip>
           </mat-chip-set>
         </div>
-        <div>
+
+        <!-- Antécédents — EDIT MODE -->
+        <div *ngIf="editMode" style="margin-bottom:20px">
+          <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px">Antécédents médicaux</div>
+          <mat-form-field style="width:100%" appearance="outline">
+            <mat-label>Antécédents (Entrée ou virgule pour ajouter)</mat-label>
+            <mat-chip-grid #historyGrid>
+              <mat-chip-row *ngFor="let h of editHistory" (removed)="removeHistory(h)">
+                {{ h }}
+                <button matChipRemove><mat-icon>cancel</mat-icon></button>
+              </mat-chip-row>
+            </mat-chip-grid>
+            <input [matChipInputFor]="historyGrid"
+              [matChipInputSeparatorKeyCodes]="separatorKeys"
+              (matChipInputTokenEnd)="addHistory($event)"
+              placeholder="ex: Diabète type 2…">
+          </mat-form-field>
+        </div>
+
+        <!-- Allergies — READ MODE -->
+        <div *ngIf="!editMode">
           <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px">Allergies</div>
-          <span *ngIf="!record.allergies?.length" style="color:var(--text-muted);font-size:13.5px">Aucune allergie enregistrée.</span>
-          <mat-chip-set *ngIf="record.allergies?.length">
-            <mat-chip color="warn" *ngFor="let a of record.allergies">{{ a }}</mat-chip>
+          <span *ngIf="!record?.allergies?.length" style="color:var(--text-muted);font-size:13.5px">Aucune allergie enregistrée.</span>
+          <mat-chip-set *ngIf="record?.allergies?.length">
+            <mat-chip color="warn" highlighted *ngFor="let a of record!.allergies">{{ a }}</mat-chip>
           </mat-chip-set>
+        </div>
+
+        <!-- Allergies — EDIT MODE -->
+        <div *ngIf="editMode">
+          <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:0.5px;color:var(--text-muted);margin-bottom:8px">Allergies</div>
+          <mat-form-field style="width:100%" appearance="outline">
+            <mat-label>Allergies (Entrée ou virgule pour ajouter)</mat-label>
+            <mat-chip-grid #allergyGrid>
+              <mat-chip-row *ngFor="let a of editAllergies" (removed)="removeAllergy(a)" color="warn" highlighted>
+                {{ a }}
+                <button matChipRemove><mat-icon>cancel</mat-icon></button>
+              </mat-chip-row>
+            </mat-chip-grid>
+            <input [matChipInputFor]="allergyGrid"
+              [matChipInputSeparatorKeyCodes]="separatorKeys"
+              (matChipInputTokenEnd)="addAllergy($event)"
+              placeholder="ex: Pénicilline, Arachides…">
+          </mat-form-field>
+        </div>
+
+        <!-- Empty state when no record and not editing -->
+        <div *ngIf="!record && !editMode" style="margin-top:16px;padding:16px;background:var(--surface-2);border-radius:var(--radius);border:1px dashed var(--border);font-size:13.5px;color:var(--text-muted);text-align:center">
+          Aucun dossier médical. Ajoutez vos antécédents et allergies pour les partager avec vos médecins.
         </div>
       </div>
 
@@ -129,11 +193,11 @@ import { environment } from '../../../../environments/environment';
         </div>
       </div>
 
-      <!-- No record -->
-      <div *ngIf="!loading && !record && !error" class="empty-state">
+      <!-- No record and not on general tab -->
+      <div *ngIf="!loading && !record && tab !== 'general' && !error" class="empty-state">
         <mat-icon>folder_open</mat-icon>
         <div class="empty-title">Aucun dossier médical</div>
-        <p>Votre dossier sera créé après votre première consultation.</p>
+        <p>Votre dossier sera créé après votre première consultation ou lorsque vous ajouterez vos informations médicales.</p>
       </div>
     </div>
   `
@@ -141,13 +205,24 @@ import { environment } from '../../../../environments/environment';
 export class MyRecordComponent implements OnInit {
   record: MedicalRecord | null = null;
   loading = true;
+  saving = false;
   error = '';
   tab: 'general' | 'consultations' | 'documents' = 'general';
   uploadsUrl = environment.uploadsUrl;
 
-  constructor(private recordSvc: RecordService) {}
+  editMode = false;
+  editHistory: string[] = [];
+  editAllergies: string[] = [];
+  readonly separatorKeys = [ENTER, COMMA] as const;
+
+  constructor(private recordSvc: RecordService, private snack: MatSnackBar) {}
 
   ngOnInit(): void {
+    this.loadRecord();
+  }
+
+  private loadRecord(): void {
+    this.loading = true;
     this.recordSvc.getMyRecord().subscribe({
       next: res => { this.record = res.record; this.loading = false; },
       error: err => {
@@ -155,6 +230,52 @@ export class MyRecordComponent implements OnInit {
         if (err.status !== 404) {
           this.error = err.error?.message || 'Erreur de chargement.';
         }
+      }
+    });
+  }
+
+  enterEdit(): void {
+    this.editHistory = [...(this.record?.history || [])];
+    this.editAllergies = [...(this.record?.allergies || [])];
+    this.editMode = true;
+  }
+
+  cancelEdit(): void {
+    this.editMode = false;
+  }
+
+  addHistory(event: MatChipInputEvent): void {
+    const value = (event.value || '').trim();
+    if (value) this.editHistory.push(value);
+    event.chipInput!.clear();
+  }
+
+  removeHistory(item: string): void {
+    this.editHistory = this.editHistory.filter(h => h !== item);
+  }
+
+  addAllergy(event: MatChipInputEvent): void {
+    const value = (event.value || '').trim();
+    if (value) this.editAllergies.push(value);
+    event.chipInput!.clear();
+  }
+
+  removeAllergy(item: string): void {
+    this.editAllergies = this.editAllergies.filter(a => a !== item);
+  }
+
+  saveRecord(): void {
+    this.saving = true;
+    this.recordSvc.updateMyRecord({ history: this.editHistory, allergies: this.editAllergies }).subscribe({
+      next: res => {
+        this.record = res.record;
+        this.saving = false;
+        this.editMode = false;
+        this.snack.open('Dossier mis à jour.', 'OK', { duration: 3000 });
+      },
+      error: err => {
+        this.saving = false;
+        this.snack.open(err.error?.message || 'Erreur lors de la mise à jour.', 'OK', { duration: 4000 });
       }
     });
   }

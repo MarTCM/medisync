@@ -6,6 +6,8 @@ import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
+import { MatDatepickerModule } from '@angular/material/datepicker';
+import { MatNativeDateModule } from '@angular/material/core';
 import { AuthService } from '../../../core/services/auth.service';
 import { TokenStorage } from '../../../core/utils/token-storage';
 
@@ -13,7 +15,8 @@ import { TokenStorage } from '../../../core/utils/token-storage';
   selector: 'app-patient-profile',
   standalone: true,
   imports: [CommonModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule,
-    MatButtonModule, MatIconModule, MatSnackBarModule],
+    MatButtonModule, MatIconModule, MatSnackBarModule,
+    MatDatepickerModule, MatNativeDateModule],
   template: `
     <div class="page-container">
       <div class="page-header">
@@ -44,6 +47,15 @@ import { TokenStorage } from '../../../core/utils/token-storage';
             <input matInput formControlName="lastName">
             <mat-error *ngIf="form.get('lastName')?.hasError('required')">Obligatoire</mat-error>
           </mat-form-field>
+
+          <mat-form-field appearance="outline" style="grid-column:1/-1">
+            <mat-label>Date de naissance</mat-label>
+            <mat-icon matPrefix style="margin-right:6px;color:var(--text-faint)">cake</mat-icon>
+            <input matInput [matDatepicker]="dobPicker" formControlName="dateOfBirth" [max]="today" placeholder="JJ/MM/AAAA">
+            <mat-datepicker-toggle matIconSuffix [for]="dobPicker"></mat-datepicker-toggle>
+            <mat-datepicker #dobPicker startView="multi-year"></mat-datepicker>
+          </mat-form-field>
+
           <mat-form-field appearance="outline" style="grid-column:1/-1">
             <mat-label>N° de sécurité sociale (CIN)</mat-label>
             <mat-icon matPrefix style="margin-right:6px;color:var(--text-faint)">badge</mat-icon>
@@ -74,6 +86,7 @@ export class PatientProfileComponent implements OnInit {
   loading = true;
   saving = false;
   email = '';
+  today = new Date();
 
   constructor(
     private fb: FormBuilder,
@@ -83,6 +96,7 @@ export class PatientProfileComponent implements OnInit {
     this.form = this.fb.group({
       firstName:            ['', Validators.required],
       lastName:             ['', Validators.required],
+      dateOfBirth:          [''],
       socialSecurityNumber: ['', [Validators.required, Validators.minLength(6)]],
       phoneNumber:          ['']
     });
@@ -103,6 +117,7 @@ export class PatientProfileComponent implements OnInit {
           this.form.patchValue({
             firstName:            p.firstName   || '',
             lastName:             p.lastName    || '',
+            dateOfBirth:          p.dateOfBirth ? new Date(p.dateOfBirth) : '',
             phoneNumber:          p.phoneNumber || '',
             socialSecurityNumber: user?.socialSecurityNumber || ''
           });
@@ -116,10 +131,13 @@ export class PatientProfileComponent implements OnInit {
   save(): void {
     if (this.form.invalid) return;
     this.saving = true;
-    this.auth.updatePatientProfile(this.form.value).subscribe({
+    const value = { ...this.form.value };
+    if (value.dateOfBirth) {
+      value.dateOfBirth = new Date(value.dateOfBirth).toISOString();
+    }
+    this.auth.updatePatientProfile(value).subscribe({
       next: () => {
         this.saving = false;
-        // Keep stored account in sync if SSN changed
         const user = this.auth.currentUser;
         if (user) {
           const updated = { ...user, socialSecurityNumber: this.form.value.socialSecurityNumber };

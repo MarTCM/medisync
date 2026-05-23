@@ -172,6 +172,33 @@ exports.getMyRecord = async (req, res) => {
   }
 };
 
+// 3b. Mettre à jour ses antécédents et allergies (Patient)
+exports.updateMyRecord = async (req, res) => {
+  try {
+    const patientProfile = await PatientProfile.findOne({ account: req.user.id });
+    if (!patientProfile) {
+      return res.status(404).json({ message: "Profil patient introuvable." });
+    }
+
+    const { history, allergies } = req.body;
+    const update = {};
+    if (Array.isArray(history)) update.history = history.map(s => String(s).trim()).filter(Boolean);
+    if (Array.isArray(allergies)) update.allergies = allergies.map(s => String(s).trim()).filter(Boolean);
+
+    const record = await MedicalRecord.findOneAndUpdate(
+      { patient: patientProfile._id },
+      { $set: update },
+      { new: true, upsert: true, populate: { path: 'consultations.doctorId', select: 'firstName lastName specialties' } }
+    );
+
+    await logAudit('MODIFICATION_DOSSIER', req, patientProfile._id, 'Patient a mis à jour ses antécédents/allergies');
+
+    res.status(200).json({ message: "Dossier mis à jour.", record });
+  } catch (error) {
+    res.status(500).json({ message: "Erreur lors de la mise à jour du dossier", error: error.message });
+  }
+};
+
 // 4. Récupérer le dossier d'un patient (Médecin / Secrétaire / Admin)
 exports.getPatientRecord = async (req, res) => {
   try {

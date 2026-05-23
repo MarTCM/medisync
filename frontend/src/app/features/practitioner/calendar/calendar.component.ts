@@ -141,10 +141,22 @@ interface DayCell {
               </div>
               <div class="apt-info">
                 <div class="apt-name">
-                  <ng-container *ngIf="isObj(apt.patient)">
+                  <ng-container *ngIf="$any(apt).dependentInfo">
+                    {{ $any(apt).dependentInfo.firstName }} {{ $any(apt).dependentInfo.lastName }}
+                    <span style="font-weight:400;font-size:12px;color:var(--text-muted)"> ({{ $any(apt).dependentInfo.relation }}{{ $any(apt).dependentInfo.dateOfBirth ? ', ' + getAge($any(apt).dependentInfo.dateOfBirth) + ' ans' : '' }})</span>
+                  </ng-container>
+                  <ng-container *ngIf="!$any(apt).dependentInfo && isObj(apt.patient)">
                     {{ $any(apt.patient).firstName }} {{ $any(apt.patient).lastName }}
                   </ng-container>
-                  <ng-container *ngIf="!isObj(apt.patient)">Créneau bloqué</ng-container>
+                  <ng-container *ngIf="!$any(apt).dependentInfo && !isObj(apt.patient)">Créneau bloqué</ng-container>
+                </div>
+                <div *ngIf="$any(apt).dependentInfo" style="font-size:11px;color:var(--text-muted);margin-top:1px">
+                  <mat-icon style="font-size:11px;width:11px;height:11px;vertical-align:-1px">person</mat-icon>
+                  Titulaire : {{ $any(apt.patient).firstName }} {{ $any(apt.patient).lastName }}
+                </div>
+                <div *ngIf="$any(apt).dependentInfo?.allergies?.length" style="font-size:11px;color:#b91c1c;margin-top:1px;font-weight:500">
+                  <mat-icon style="font-size:11px;width:11px;height:11px;vertical-align:-1px">warning</mat-icon>
+                  Allergies : {{ $any(apt).dependentInfo.allergies.join(', ') }}
                 </div>
                 <div class="apt-meta">
                   <mat-icon style="font-size:13px;width:13px;height:13px;vertical-align:-2px">medical_services</mat-icon>
@@ -175,7 +187,10 @@ interface DayCell {
                 <div style="font-size:12px;opacity:0.85">Prochain rendez-vous</div>
                 <div style="font-weight:600;font-size:15px">
                   {{ nextAppt.startTime | date:'HH:mm' }} —
-                  <ng-container *ngIf="isObj(nextAppt.patient)">
+                  <ng-container *ngIf="$any(nextAppt).dependentInfo">
+                    {{ $any(nextAppt).dependentInfo.firstName }} {{ $any(nextAppt).dependentInfo.lastName }}
+                  </ng-container>
+                  <ng-container *ngIf="!$any(nextAppt).dependentInfo && isObj(nextAppt.patient)">
                     {{ $any(nextAppt.patient).firstName }} {{ $any(nextAppt.patient).lastName }}
                   </ng-container>
                   <span style="opacity:0.85;font-weight:400"> · {{ nextAppt.reason }}</span>
@@ -188,7 +203,11 @@ interface DayCell {
               <div class="apt-time">{{ apt.startTime | date:'HH:mm' }}</div>
               <div class="apt-info">
                 <div class="apt-name">
-                  <ng-container *ngIf="isObj(apt.patient)">
+                  <ng-container *ngIf="$any(apt).dependentInfo">
+                    {{ $any(apt).dependentInfo.firstName }} {{ $any(apt).dependentInfo.lastName }}
+                    <span style="font-weight:400;font-size:12px;color:rgba(255,255,255,0.7)"> ({{ $any(apt).dependentInfo.relation }})</span>
+                  </ng-container>
+                  <ng-container *ngIf="!$any(apt).dependentInfo && isObj(apt.patient)">
                     {{ $any(apt.patient).firstName }} {{ $any(apt.patient).lastName }}
                   </ng-container>
                 </div>
@@ -227,10 +246,13 @@ interface DayCell {
                 </span>
               </div>
               <div style="font-size:11.5px;color:var(--text);font-weight:500;line-height:1.2;margin-top:2px">
-                <ng-container *ngIf="isObj(apt.patient)">
+                <ng-container *ngIf="$any(apt).dependentInfo">
+                  {{ $any(apt).dependentInfo.firstName }} {{ $any(apt).dependentInfo.lastName }}
+                </ng-container>
+                <ng-container *ngIf="!$any(apt).dependentInfo && isObj(apt.patient)">
                   {{ $any(apt.patient).firstName }} {{ $any(apt.patient).lastName }}
                 </ng-container>
-                <ng-container *ngIf="!isObj(apt.patient)">—</ng-container>
+                <ng-container *ngIf="!$any(apt).dependentInfo && !isObj(apt.patient)">—</ng-container>
               </div>
             </div>
             <div *ngIf="day.appointments.length === 0" style="text-align:center;color:var(--text-muted);font-size:11px;padding:12px 4px">
@@ -479,4 +501,13 @@ export class DoctorCalendarComponent implements OnInit, OnDestroy {
   }
 
   isObj(d: any): boolean { return d && typeof d === 'object'; }
+
+  getAge(dateOfBirth: string): number {
+    const birth = new Date(dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  }
 }

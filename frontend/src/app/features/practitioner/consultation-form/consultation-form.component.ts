@@ -23,13 +23,40 @@ import { CONSULTATION_TEMPLATES, getTemplateForSpecialty, listTemplates } from '
     MatInputModule, MatButtonModule, MatChipsModule, MatIconModule, MatExpansionModule,
     MatMenuModule, MatAutocompleteModule],
   template: `
-    <h2 mat-dialog-title>Consultation — {{ patientName }}</h2>
+    <h2 mat-dialog-title>Consultation — {{ consultationName }}</h2>
     <mat-dialog-content style="min-width:560px; max-height:80vh">
 
-      <!-- Patient medical context -->
+      <!-- Third-party banner: show when appointment is for a dependent -->
+      <div *ngIf="apt.dependentInfo" style="margin-bottom:16px;padding:14px 16px;background:#eff6ff;border:1.5px solid #3b82f6;border-radius:8px">
+        <div style="font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.5px;color:#2563eb;margin-bottom:10px;display:flex;align-items:center;gap:6px">
+          <mat-icon style="font-size:16px;width:16px;height:16px">group</mat-icon>
+          Consultation pour un tiers — compte titulaire : {{ patientName }}
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3, auto);gap:6px 20px;font-size:13.5px;margin-bottom:10px">
+          <span><strong>Prénom :</strong> {{ apt.dependentInfo.firstName }}</span>
+          <span><strong>Nom :</strong> {{ apt.dependentInfo.lastName }}</span>
+          <span><strong>Relation :</strong> {{ apt.dependentInfo.relation }}</span>
+          <span *ngIf="apt.dependentInfo.dateOfBirth">
+            <strong>Âge :</strong> {{ dependentAge }} ans
+            <span style="color:#6b7280;font-size:12px"> ({{ apt.dependentInfo.dateOfBirth | date:'dd/MM/yyyy' }})</span>
+          </span>
+        </div>
+        <div *ngIf="apt.dependentInfo.allergies?.length" style="margin-bottom:6px">
+          <strong style="font-size:13px">Allergies :</strong>
+          <span *ngFor="let a of apt.dependentInfo.allergies"
+            style="display:inline-block;margin:2px 4px;padding:1px 8px;background:#fee2e2;color:#b91c1c;border-radius:10px;font-size:12px;font-weight:600">
+            {{ a }}
+          </span>
+        </div>
+        <div *ngIf="apt.dependentInfo.notes" style="font-size:13px;color:#374151">
+          <strong>Notes :</strong> {{ apt.dependentInfo.notes }}
+        </div>
+      </div>
+
+      <!-- Patient medical context (account holder record) -->
       <mat-expansion-panel *ngIf="record" style="margin-bottom:16px">
         <mat-expansion-panel-header>
-          <mat-panel-title style="font-weight:600">Dossier médical du patient</mat-panel-title>
+          <mat-panel-title style="font-weight:600">Dossier médical{{ apt.dependentInfo ? ' du titulaire du compte' : ' du patient' }}</mat-panel-title>
         </mat-expansion-panel-header>
         <div style="padding:4px 0 8px">
           <div style="margin-bottom:8px">
@@ -163,6 +190,23 @@ export class ConsultationFormComponent implements OnInit {
   get patientName(): string {
     const p = this.apt.patient as any;
     return p?.firstName ? `${p.firstName} ${p.lastName}` : 'Patient';
+  }
+
+  get consultationName(): string {
+    const dep = (this.apt as any).dependentInfo;
+    if (dep) return `${dep.firstName} ${dep.lastName}`;
+    return this.patientName;
+  }
+
+  get dependentAge(): number | null {
+    const dob = (this.apt as any).dependentInfo?.dateOfBirth;
+    if (!dob) return null;
+    const birth = new Date(dob);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
   }
 
   get patientId(): string {

@@ -11,6 +11,7 @@ export interface PatientProfile {
   account: string;
   firstName: string;
   lastName: string;
+  dateOfBirth?: string;
   phoneNumber?: string;
   dependents?: Dependent[];
 }
@@ -21,6 +22,8 @@ export interface Dependent {
   lastName: string;
   dateOfBirth?: string;
   relation: 'enfant' | 'conjoint' | 'parent';
+  allergies?: string[];
+  notes?: string;
 }
 
 export interface DoctorProfile {
@@ -54,6 +57,7 @@ export interface Appointment {
   patient: string | PatientProfile;
   doctor: string | DoctorProfile;
   dependentId?: string;
+  dependentInfo?: Dependent;
   startTime: string;
   endTime: string;
   duration: 15 | 30 | 60;

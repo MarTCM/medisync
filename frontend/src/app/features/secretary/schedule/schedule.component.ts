@@ -73,10 +73,21 @@ import { toLocalDateString } from '../../../core/utils/date';
           </div>
           <div class="apt-info">
             <div class="apt-name">
-              <ng-container *ngIf="isObj(apt.patient)">
+              <ng-container *ngIf="$any(apt).dependentInfo">
+                {{ $any(apt).dependentInfo.firstName }} {{ $any(apt).dependentInfo.lastName }}
+                <span style="font-weight:400;font-size:12px;color:var(--text-muted)"> ({{ $any(apt).dependentInfo.relation }}{{ $any(apt).dependentInfo.dateOfBirth ? ', ' + getAge($any(apt).dependentInfo.dateOfBirth) + ' ans' : '' }})</span>
+              </ng-container>
+              <ng-container *ngIf="!$any(apt).dependentInfo && isObj(apt.patient)">
                 {{ $any(apt.patient).firstName }} {{ $any(apt.patient).lastName }}
               </ng-container>
-              <ng-container *ngIf="!isObj(apt.patient)">—</ng-container>
+              <ng-container *ngIf="!$any(apt).dependentInfo && !isObj(apt.patient)">—</ng-container>
+            </div>
+            <div *ngIf="$any(apt).dependentInfo" style="font-size:11.5px;color:var(--text-muted);margin-top:1px">
+              Titulaire : {{ $any(apt.patient).firstName }} {{ $any(apt.patient).lastName }}
+            </div>
+            <div *ngIf="$any(apt).dependentInfo?.allergies?.length" style="font-size:11.5px;color:#b91c1c;font-weight:500;margin-top:1px">
+              <mat-icon style="font-size:12px;width:12px;height:12px;vertical-align:-1px">warning</mat-icon>
+              Allergies : {{ $any(apt).dependentInfo.allergies.join(', ') }}
             </div>
             <div class="apt-meta">
               <ng-container *ngIf="isObj(apt.doctor)">
@@ -266,4 +277,13 @@ export class SecretaryScheduleComponent implements OnInit, OnDestroy {
   }
 
   isObj(d: any): boolean { return d && typeof d === 'object'; }
+
+  getAge(dateOfBirth: string): number {
+    const birth = new Date(dateOfBirth);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+    return age;
+  }
 }
