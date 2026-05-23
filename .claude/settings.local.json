@@ -58,7 +58,8 @@
       "Bash(node --check src/utils/emailService.js)",
       "Bash(node --check src/utils/reminderScheduler.js)",
       "Bash(node --check src/controllers/appointmentController.js)",
-      "Bash(node --check src/controllers/invoiceController.js)"
+      "Bash(node --check src/controllers/invoiceController.js)",
+      "Bash(grep -E \"\\\\.\\(ts|html|css|scss\\)$\")"
     ]
   }
 }

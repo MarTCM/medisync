@@ -153,7 +153,7 @@ mat-icon {
 // ── Sidebar (white, refined) ───────────────────────────────────────────────
 .sidebar-nav {
   width: 240px;
-  min-height: 100vh;
+  height: 100vh;
   background: var(--sidebar-bg);
   border-right: 1px solid var(--sidebar-border);
   display: flex;
@@ -161,6 +161,7 @@ mat-icon {
   flex-shrink: 0;
   position: sticky;
   top: 0;
+  overflow: hidden;
 
   .nav-logo {
     padding: 22px 20px 18px;
@@ -213,6 +214,7 @@ mat-icon {
   .nav-section {
     padding: 16px 12px 8px;
     flex: 1;
+    overflow-y: auto;
 
     .nav-label {
       font-size: 10px;
