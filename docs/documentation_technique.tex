@@ -1,0 +1,1253 @@
+% ============================================================
+%  MediSync — Documentation Technique
+%  Compilez avec : pdflatex documentation_technique.tex (x2)
+% ============================================================
+\documentclass[12pt,a4paper]{report}
+
+% ---- Encodage & langue ----
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[french]{babel}
+
+% ---- Police ----
+\usepackage{lmodern}
+\usepackage{microtype}
+
+% ---- Mise en page ----
+\usepackage[top=2.5cm,bottom=2.5cm,left=2.8cm,right=2.8cm]{geometry}
+\usepackage{setspace}
+\onehalfspacing
+\setlength{\parskip}{5pt}
+\setlength{\parindent}{0pt}
+
+% ---- Couleurs & graphiques ----
+\usepackage[dvipsnames,svgnames,x11names]{xcolor}
+\usepackage{graphicx}
+\usepackage{tikz}
+\usetikzlibrary{shapes.geometric,arrows.meta,positioning,calc,fit,backgrounds}
+
+% ---- Tableaux ----
+\usepackage{booktabs}
+\usepackage{longtable}
+\usepackage{tabularx}
+\usepackage{multirow}
+\usepackage{array}
+
+% ---- Réduit l'espacement interne des tableaux ----
+\setlength{\tabcolsep}{5pt}
+
+% ---- Code & verbatim ----
+\usepackage{listings}
+
+% ---- En-têtes & pieds de page ----
+\usepackage{fancyhdr}
+\usepackage{emptypage}
+
+% ---- Hyperliens ----
+\usepackage[hidelinks,
+  pdftitle={MediSync -- Documentation Technique},
+  pdfauthor={Equipe MediSync},
+  pdfsubject={Documentation technique complete}]{hyperref}
+
+% ---- Autres utilitaires ----
+\usepackage{enumitem}
+\usepackage{tcolorbox}
+\usepackage{caption}
+\usepackage{amsmath}
+
+\tcbuselibrary{skins,breakable}
+
+% ============================================================
+%  Palette de couleurs MediSync
+% ============================================================
+\definecolor{MedTeal}{HTML}{00838F}
+\definecolor{MedTealDark}{HTML}{005F6B}
+\definecolor{MedTealLight}{HTML}{E0F4F6}
+\definecolor{DarkSlate}{HTML}{0F172A}
+\definecolor{LightGray}{HTML}{F8FAFC}
+\definecolor{BorderGray}{HTML}{CBD5E1}
+\definecolor{CodeBg}{HTML}{F1F5F9}
+\definecolor{SuccessGreen}{HTML}{166534}
+\definecolor{WarningOrange}{HTML}{C2410C}
+\definecolor{ErrorRed}{HTML}{DC2626}
+\definecolor{CommentGray}{HTML}{64748B}
+\definecolor{KeywordBlue}{HTML}{1D4ED8}
+
+% ============================================================
+%  Style des listings de code — tout en clair
+% ============================================================
+\lstdefinestyle{code}{
+  basicstyle=\ttfamily\small\color{DarkSlate},
+  backgroundcolor=\color{CodeBg},
+  frame=single,
+  rulecolor=\color{BorderGray},
+  breaklines=true,
+  breakatwhitespace=false,
+  showstringspaces=false,
+  keywordstyle=\color{MedTealDark}\bfseries,
+  stringstyle=\color{SuccessGreen},
+  commentstyle=\color{CommentGray}\itshape,
+  columns=flexible,
+  xleftmargin=10pt,
+  xrightmargin=10pt,
+  aboveskip=6pt,
+  belowskip=6pt,
+  tabsize=2,
+}
+\lstdefinestyle{bash}{
+  style=code,
+  language=bash,
+  morekeywords={node,npm,ng,mongod,mkdir,cd,sudo,rm},
+  morecomment=[l]{\#},
+  keywordstyle=\color{MedTealDark}\bfseries,
+}
+\lstset{style=code}
+
+% ============================================================
+%  Boîtes personnalisées
+% ============================================================
+\newtcolorbox{infobox}[1][]{
+  colback=MedTealLight,
+  colframe=MedTeal,
+  boxrule=0.8pt,
+  arc=4pt,
+  left=8pt, right=8pt, top=5pt, bottom=5pt,
+  fonttitle=\bfseries\small\color{MedTealDark},
+  coltitle=MedTealDark,
+  #1
+}
+\newtcolorbox{warnbox}[1][]{
+  colback=orange!8,
+  colframe=WarningOrange,
+  boxrule=0.8pt,
+  arc=4pt,
+  left=8pt, right=8pt, top=5pt, bottom=5pt,
+  fonttitle=\bfseries\small\color{WarningOrange},
+  coltitle=WarningOrange,
+  #1
+}
+
+% ============================================================
+%  En-têtes & pieds de page
+% ============================================================
+\pagestyle{fancy}
+\fancyhf{}
+\fancyhead[L]{\small\textcolor{MedTeal}{\textbf{MediSync}}%
+  \textcolor{BorderGray}{\enspace|\enspace}%
+  \textcolor{CommentGray}{Documentation Technique}}
+\fancyhead[R]{\small\textcolor{CommentGray}{\nouppercase{\leftmark}}}
+\fancyfoot[C]{\small\textcolor{CommentGray}{\thepage}}
+\renewcommand{\headrulewidth}{0.4pt}
+\renewcommand{\footrulewidth}{0pt}
+
+% ============================================================
+%  Commandes utilitaires
+% ============================================================
+\newcommand{\method}[1]{\texttt{\textcolor{MedTealDark}{\bfseries#1}}}
+\newcommand{\role}[1]{%
+  \texttt{\small\colorbox{MedTealLight}{\textcolor{MedTealDark}{#1}}}}
+\newcommand{\field}[1]{\texttt{\small\textcolor{MedTealDark}{#1}}}
+\newcommand{\typ}[1]{\textit{\small\textcolor{CommentGray}{#1}}}
+
+% ============================================================
+%  DOCUMENT
+% ============================================================
+\begin{document}
+
+% ============================================================
+%  PAGE DE GARDE — fond blanc, accents teal
+% ============================================================
+\begin{titlepage}
+  \pagecolor{white}
+  \color{DarkSlate}
+
+  \vspace*{1.5cm}
+
+  % Bande décorative supérieure
+  \noindent\textcolor{MedTeal}{\rule{\textwidth}{4pt}}
+
+  \vspace{0.5cm}
+
+  \begin{center}
+    % Logo circulaire
+    \begin{tikzpicture}
+      \fill[MedTeal] (0,0) circle (1.6cm);
+      \fill[MedTealLight] (0,0) circle (1.3cm);
+      \node[font=\fontsize{28}{28}\selectfont\bfseries\color{MedTealDark}]
+        at (0,0) {M};
+    \end{tikzpicture}
+
+    \vspace{0.7cm}
+    {\fontsize{36}{42}\selectfont\bfseries\textcolor{MedTeal}{MediSync}}
+
+    \vspace{0.2cm}
+    {\large\textcolor{CommentGray}{Système de Gestion de Clinique Médicale}}
+
+    \vspace{1.2cm}
+
+    % Boîte titre centrale
+    \noindent\colorbox{MedTealLight}{%
+      \parbox{0.85\textwidth}{%
+        \vspace{0.5cm}
+        \centering
+        {\LARGE\bfseries\textcolor{MedTealDark}{Documentation Technique Complète}}
+        \vspace{0.5cm}
+      }%
+    }
+
+    \vspace{1.5cm}
+
+    % Table d'informations
+    \begin{tabular}{@{} r @{\quad} l @{}}
+      \textcolor{CommentGray}{Version} &
+        \textcolor{DarkSlate}{\textbf{1.0.0}} \\[6pt]
+      \textcolor{CommentGray}{Date} &
+        \textcolor{DarkSlate}{\textbf{Mai 2026}} \\[6pt]
+      \textcolor{CommentGray}{Frontend} &
+        \textcolor{DarkSlate}{\textbf{Angular 17 + Angular Material}} \\[6pt]
+      \textcolor{CommentGray}{Backend} &
+        \textcolor{DarkSlate}{\textbf{Node.js 18 + Express 4}} \\[6pt]
+      \textcolor{CommentGray}{Base de données} &
+        \textcolor{DarkSlate}{\textbf{MongoDB 7 (Mongoose 8)}} \\[6pt]
+    \end{tabular}
+  \end{center}
+
+  \vfill
+
+  \noindent\textcolor{BorderGray}{\rule{\textwidth}{1pt}}
+  \vspace{0.2cm}
+  \begin{center}
+    \small\textcolor{CommentGray}{Projet académique — Soutenance juin 2026}
+  \end{center}
+  \vspace{0.3cm}
+  \noindent\textcolor{MedTeal}{\rule{\textwidth}{4pt}}
+\end{titlepage}
+\nopagecolor
+
+% ============================================================
+%  TABLE DES MATIÈRES
+% ============================================================
+\tableofcontents
+\thispagestyle{empty}
+\clearpage
+
+% ============================================================
+%  CHAPITRE 1 — PRÉSENTATION DU PROJET
+% ============================================================
+\chapter{Présentation du Projet}
+
+\section{Contexte et Objectifs}
+
+\textbf{MediSync} est une application web full-stack de gestion de clinique médicale développée dans le cadre d'un projet académique. Elle vise à digitaliser et centraliser l'ensemble des flux d'une structure de soins : prise de rendez-vous, suivi des dossiers médicaux, facturation, gestion du personnel et pilotage analytique.
+
+L'application répond aux exigences du cahier des charges en supportant \textbf{quatre rôles utilisateurs distincts} avec des interfaces et permissions adaptées à chaque profil professionnel.
+
+\section{Rôles Utilisateurs}
+
+\begin{center}
+\small
+\begin{tabular}{@{} p{2.6cm} p{11.5cm} @{}}
+  \toprule
+  \textbf{Rôle} & \textbf{Responsabilités principales} \\
+  \midrule
+  \role{patient} &
+    Tableau de bord, recherche et réservation de médecins, suivi des rendez-vous,
+    dossier médical personnel, factures, avis post-consultation. \\[4pt]
+  \role{medecin} &
+    Planning journalier, saisie des comptes rendus (ordonnances, prescriptions,
+    pièces jointes), gestion des congés et indisponibilités, profil. \\[4pt]
+  \role{secretaire} &
+    Planning global (confirmation, no-show, report), création de dossiers patients,
+    émission et suivi des factures. \\[4pt]
+  \role{administrateur} &
+    Tableau de bord KPI, CRUD personnel, configuration clinique, export analytique
+    (PDF/XLSX), journal d'audit, 2FA. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Fonctionnalités Clés}
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Authentification multi-modale} : identifiant/mot de passe, Google OAuth 2.0, TOTP 2FA (admin).
+  \item \textbf{Gestion des rendez-vous} : créneaux en temps réel, six statuts métier.
+  \item \textbf{Dossier médical électronique} : antécédents, allergies, consultations, ordonnances, pièces jointes (PDF, JPG, PNG, DICOM $\leq$ 20 Mo).
+  \item \textbf{Facturation} : émission, feuille de soins (Sécu), PDF, envoi e-mail, impayés.
+  \item \textbf{Notifications} : rappels automatiques de rendez-vous (cron horaire, Resend).
+  \item \textbf{Analytics} : KPIs, revenus, exports PDF/XLSX (PDFKit, ExcelJS).
+  \item \textbf{Journal d'audit} : traçabilité de chaque accès sensible (RGPD).
+\end{itemize}
+
+% ============================================================
+%  CHAPITRE 2 — ARCHITECTURE
+% ============================================================
+\chapter{Architecture de l'Application}
+
+\section{Vue d'Ensemble}
+
+MediSync adopte une architecture \textbf{découplée client-serveur} (SPA + REST API) :
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Frontend SPA} (Angular 17) — communique avec le backend via requêtes HTTP authentifiées (JWT Bearer).
+  \item \textbf{Backend REST API} (Express 4 / Node 18) — logique métier et accès aux données.
+  \item \textbf{Base de données} (MongoDB 7) — documents JSON ; Mongoose 8 fournit l'ODM, la validation et les hooks.
+  \item \textbf{Stockage fichiers} — dossier \texttt{uploads/} servi en statique par Express.
+  \item \textbf{Service e-mail} — API Resend (HTTPS) pour les notifications transactionnelles.
+\end{itemize}
+
+\vspace{0.4cm}
+
+% ---- Diagramme architecture : disposition verticale + services latéraux ----
+\begin{center}
+\begin{tikzpicture}[
+  box/.style={
+    draw=MedTeal, fill=MedTealLight, rounded corners=5pt,
+    minimum width=3.6cm, minimum height=0.85cm,
+    align=center, font=\small\bfseries\color{MedTealDark}
+  },
+  extbox/.style={
+    draw=BorderGray, fill=LightGray, rounded corners=5pt,
+    minimum width=3.2cm, minimum height=0.75cm,
+    align=center, font=\small\color{CommentGray}
+  },
+  arr/.style={-Latex, thick, MedTeal},
+  darr/.style={-Latex, thick, dashed, BorderGray},
+  lbl/.style={font=\footnotesize\itshape, text=CommentGray, fill=white,
+              inner sep=1pt}
+]
+  % Colonne principale (verticale, centrée)
+  \node[box] (browser) at (0,0)       {Navigateur Web};
+  \node[box] (ng)      at (0,-1.8)    {Angular 17\\{\footnotesize Port 4200}};
+  \node[box] (api)     at (0,-3.6)    {Express API\\{\footnotesize Port 3000}};
+  \node[box] (db)      at (0,-5.4)    {MongoDB\\{\footnotesize Port 27017}};
+
+  % Flèches bidirectionnelles colonne principale
+  \draw[arr] (browser) -- node[lbl,right]{HTTP / SPA} (ng);
+  \draw[arr] (ng)      -- node[lbl,right]{REST / JWT} (api);
+  \draw[arr] (api)     -- node[lbl,right]{Mongoose ODM} (db);
+  \draw[darr,<->] (db.north) -- +(0,0.4)
+    node[lbl,left,pos=1]{Documents JSON} -- (api.south);
+
+  % Service externe : Google OAuth (à gauche)
+  \node[extbox] (google) at (-5.2,-1.8) {Google OAuth 2.0};
+  \draw[darr] (ng.west) -- node[lbl,above]{\footnotesize OAuth} (google.east);
+
+  % Service externe : Resend (à droite)
+  \node[extbox] (resend) at (5.2,-3.6) {Resend\\{\footnotesize E-mail API}};
+  \draw[darr] (api.east) -- node[lbl,above]{\footnotesize HTTPS} (resend.west);
+
+  % Étiquettes de section
+  \node[font=\footnotesize\bfseries\color{CommentGray}, above=0.15cm of browser]
+    {Couche Présentation};
+  \node[font=\footnotesize\bfseries\color{CommentGray}, below=0.15cm of db]
+    {Couche Persistance};
+\end{tikzpicture}
+\end{center}
+
+\section{Structure des Répertoires}
+
+\subsection{Backend (\texttt{/backend})}
+
+\begin{lstlisting}[style=bash]
+backend/
+  server.js             # Entree : middlewares globaux, montage des routes
+  seed.js               # Donnees de demonstration
+  src/
+    config/db.js        # Connexion Mongoose
+    controllers/        # Logique metier (9 controleurs)
+    middleware/
+      auth.js           # JWT verify -> req.user
+      role.js           # authorize(...roles) -> 403 si role absent
+      upload.js         # multer : filtre MIME, limite 20 Mo
+      validate.js       # express-validator : arrete si erreurs
+    models/             # 9 schemas Mongoose
+    routes/             # 9 routeurs Express
+    utils/
+      auditLogger.js    # Ecrit dans AuditLog (actions sensibles)
+      emailService.js   # Resend : sendNotification()
+      emailTemplates.js # Templates HTML des e-mails
+      generateToken.js  # jwt.sign() avec expiry
+      pdfGenerator.js   # PDFKit : factures, ordonnances, feuilles de soins
+      reminderScheduler.js  # node-cron horaire
+  uploads/              # Pieces jointes medicales (statique)
+\end{lstlisting}
+
+\subsection{Frontend (\texttt{/frontend/src})}
+
+\begin{lstlisting}[style=bash]
+frontend/src/app/
+  app.config.ts         # provideRouter, HttpClient, locale FR, theme
+  app.routes.ts         # Routes racines avec lazy loading
+  core/
+    guards/             # auth.guard.ts, role.guard.ts
+    interceptors/       # auth.interceptor.ts, error.interceptor.ts
+    models/index.ts     # Interfaces TypeScript (Account, Appointment...)
+    services/           # 10 services Angular (wrappers HTTP)
+    utils/              # token-storage.ts, date.ts
+    data/               # medications.ts, consultation-templates.ts
+  features/
+    auth/               # login, register, 2FA, complete-profile
+    patient/            # dashboard, search-doctors, book-appointment,
+                        # my-appointments, my-record, my-invoices
+    practitioner/       # calendar, consultation-form, leaves, profile
+    secretary/          # schedule, patients, invoices + dialogs
+    admin/              # dashboard, staff, facility, analytics,
+                        # audit-log, 2FA-setup
+\end{lstlisting}
+
+\section{Flux d'Authentification}
+
+\begin{center}
+\begin{tikzpicture}[
+  node distance=0.7cm,
+  step/.style={
+    draw=MedTeal, rounded corners=3pt, fill=MedTealLight,
+    minimum width=8.5cm, minimum height=0.65cm,
+    align=center, font=\small\color{DarkSlate}
+  },
+  dec/.style={
+    draw=WarningOrange, diamond, fill=orange!10,
+    minimum width=1.6cm, minimum height=0.65cm,
+    align=center, font=\small\bfseries\color{WarningOrange}
+  },
+  altbox/.style={
+    draw=WarningOrange, rounded corners=3pt, fill=orange!10,
+    minimum width=4cm, minimum height=0.65cm,
+    align=center, font=\small\color{DarkSlate}
+  },
+  arr/.style={-Latex, thick, MedTeal},
+  warr/.style={-Latex, thick, dashed, WarningOrange},
+  lbl/.style={font=\footnotesize\color{CommentGray}, fill=white, inner sep=1pt}
+]
+  \node[step]  (login)    {1.\ POST \texttt{/api/auth/login} (identifier + password)};
+  \node[step, below=of login]  (bcrypt)  {2.\ Vérification \texttt{bcrypt} du mot de passe};
+  \node[dec,  below=0.6cm of bcrypt]  (has2fa)  {2FA?};
+  \node[step, below=1.3cm of has2fa]  (jwt)     {3a.\ Génération JWT (7j) + payload \texttt{\{id, role\}}};
+  \node[step, below=of jwt]    (ls)      {4.\ Stockage \texttt{localStorage} (token + user)};
+  \node[step, below=of ls]     (guard)   {5.\ AuthGuard / RoleGuard $\rightarrow$ redirection portail};
+  \node[step, below=of guard]  (icp)     {6.\ AuthInterceptor : \texttt{Authorization: Bearer <token>}};
+
+  % Branche 2FA (à droite du diamant)
+  \node[altbox, right=1.2cm of has2fa] (totp)
+    {3b.\ \texttt{tempToken} émis\\POST \texttt{/api/auth/2fa/verify}};
+
+  % Flèches principales
+  \draw[arr] (login)  -- (bcrypt);
+  \draw[arr] (bcrypt) -- (has2fa);
+  \draw[arr] (has2fa) -- node[lbl,left]{Non} (jwt);
+  \draw[arr] (jwt)    -- (ls);
+  \draw[arr] (ls)     -- (guard);
+  \draw[arr] (guard)  -- (icp);
+
+  % Branche 2FA
+  \draw[warr] (has2fa) -- node[lbl,above]{Oui} (totp);
+  \draw[warr] (totp.south) |- (jwt.east);
+\end{tikzpicture}
+\end{center}
+
+% ============================================================
+%  CHAPITRE 3 — PILE TECHNOLOGIQUE
+% ============================================================
+\chapter{Pile Technologique}
+
+\section{Frontend}
+
+\begin{center}
+\small
+\begin{tabular}{@{} l l l p{6cm} @{}}
+  \toprule
+  \textbf{Technologie} & \textbf{Version} & \textbf{Rôle} & \textbf{Justification} \\
+  \midrule
+  Angular              & 17.3  & Framework SPA     & Standalone components, routing, DI \\
+  Angular Material     & 17.3  & Bibliothèque UI   & Composants accessibles, thème Material 3 \\
+  Angular CDK          & 17.3  & Utilitaires UI    & Overlay, virtual scroll \\
+  TypeScript           & 5.4   & Langage           & Typage statique, interfaces métier \\
+  RxJS                 & 7.8   & Réactivité        & Observables pour les appels HTTP \\
+  Chart.js / ng2-charts& 4.5/5.0 & Graphiques      & KPIs et analytics admin \\
+  SCSS                 & —     & Styles            & Variables, thème teal personnalisé \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Backend}
+
+\begin{center}
+\small
+\begin{tabular}{@{} l l l p{5.5cm} @{}}
+  \toprule
+  \textbf{Bibliothèque}   & \textbf{Version} & \textbf{Rôle}         & \textbf{Description} \\
+  \midrule
+  Express                 & 4.19  & Framework HTTP     & Routing, middlewares, serveur REST \\
+  Mongoose                & 8.4   & ODM MongoDB        & Schémas, validation, hooks pre/post \\
+  bcryptjs                & 2.4   & Sécurité           & Hachage des mots de passe (salt 10) \\
+  jsonwebtoken            & 9.0   & Auth               & Génération / vérification JWT HS256 \\
+  express-validator       & 7.2   & Validation         & Validation des corps de requêtes \\
+  speakeasy               & 2.0   & 2FA TOTP           & Secret + vérification code 6 chiffres \\
+  qrcode                  & 1.5   & 2FA                & QR Code pour apps authenticator \\
+  google-auth-library     & 9.11  & OAuth              & Vérification \texttt{idToken} Google \\
+  multer                  & 2.1   & Upload             & Stockage local, filtre MIME, 20 Mo max \\
+  PDFKit                  & 0.18  & PDF                & Factures, ordonnances, feuilles de soins \\
+  ExcelJS                 & 4.4   & Export             & Feuilles de calcul XLSX \\
+  Resend                  & 6.12  & E-mail             & Notifications transactionnelles \\
+  node-cron               & 4.2   & Tâches planifiées  & Rappels RDV (exécution horaire) \\
+  morgan                  & 1.10  & Logging            & Journal des requêtes HTTP \\
+  cors                    & 2.8   & Sécurité           & Restriction CORS à l'URL du frontend \\
+  dotenv                  & 16.4  & Configuration      & Variables d'environnement \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Infrastructure}
+
+\begin{center}
+\small
+\begin{tabular}{@{} l l l @{}}
+  \toprule
+  \textbf{Composant}        & \textbf{Technologie}  & \textbf{Version minimale} \\
+  \midrule
+  Runtime serveur           & Node.js               & 18 LTS \\
+  Base de données           & MongoDB               & 6+ \\
+  Gestionnaire de paquets   & npm                   & 9+ \\
+  CLI Angular               & @angular/cli          & 17.3 \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+% ============================================================
+%  CHAPITRE 4 — SCHÉMA DE BASE DE DONNÉES
+% ============================================================
+\chapter{Schéma de Base de Données}
+
+MediSync utilise \textbf{MongoDB} (NoSQL orienté documents). Les schémas Mongoose définissent \textbf{neuf collections}. Les relations inter-documents sont matérialisées par des références \texttt{ObjectId} populées côté backend.
+
+\section{Vue Relationnelle des Collections}
+
+\begin{center}
+\begin{tikzpicture}[
+  coll/.style={
+    draw=MedTeal, fill=MedTealLight, rounded corners=4pt,
+    minimum width=2.8cm, minimum height=0.75cm,
+    align=center, font=\small\bfseries\color{MedTealDark}
+  },
+  ref/.style={-Latex, dashed, CommentGray, font=\scriptsize,
+              text=CommentGray},
+]
+  % Ligne 1 : pivot Account centré
+  \node[coll] (acc) at (0,0) {Account};
+
+  % Ligne 2 : profils
+  \node[coll] (dp) at (-4,-2)  {DoctorProfile};
+  \node[coll] (pp) at (0,-2)   {PatientProfile};
+  \node[coll] (sp) at (4,-2)   {SecretaryProfile};
+
+  % Ligne 3 : entités transactionnelles
+  \node[coll] (apt) at (-2.5,-4) {Appointment};
+  \node[coll] (mr)  at (2.5,-4)  {MedicalRecord};
+
+  % Ligne 4 : entités dérivées
+  \node[coll] (inv) at (-4.5,-6) {Invoice};
+  \node[coll] (rv)  at (0,-6)    {Review};
+  \node[coll] (al)  at (4.5,-6)  {AuditLog};
+
+  % Relations vers Account
+  \draw[ref] (dp) -- node[left]{\scriptsize account} (acc);
+  \draw[ref] (pp) -- node[right,near start]{\scriptsize account} (acc);
+  \draw[ref] (sp) -- node[right]{\scriptsize account} (acc);
+
+  % Relations vers profils
+  \draw[ref] (apt) -- node[left]{\scriptsize doctor} (dp);
+  \draw[ref] (apt) -- node[right,near start]{\scriptsize patient} (pp);
+  \draw[ref] (mr)  -- node[right]{\scriptsize patient} (pp);
+
+  % Relations vers Appointment / profils
+  \draw[ref] (inv) -- node[left]{\scriptsize appointment} (apt);
+  \draw[ref] (inv.north east) -- node[above,sloped]{\scriptsize patient} (pp.south);
+  \draw[ref] (rv)  -- node[right,near start]{\scriptsize appointment} (apt);
+
+  % AuditLog → Account
+  \draw[ref] (al) -- node[right]{\scriptsize userAccount} (acc);
+\end{tikzpicture}
+\end{center}
+
+\section{Descriptions Détaillées des Collections}
+
+% ---- Account ----
+\subsection{Account}
+
+Pivot central de l'identité — représente le compte d'authentification de tout utilisateur.
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{} l l X @{}}
+  \toprule
+  \textbf{Champ} & \textbf{Type} & \textbf{Description} \\
+  \midrule
+  \field{email}               & \typ{String}  & E-mail (unique, sparse, lowercase). \\
+  \field{socialSecurityNumber}& \typ{String}  & Numéro SS (unique, sparse). \\
+  \field{password}            & \typ{String}  & Haché bcrypt (salt 10). Requis si pas \texttt{googleId}. \\
+  \field{googleId}            & \typ{String}  & Identifiant Google OAuth 2.0. \\
+  \field{role}                & \typ{Enum}    & \texttt{patient | medecin | secretaire | administrateur} \\
+  \field{twoFactorSecret}     & \typ{String}  & Secret TOTP speakeasy (admins uniquement). \\
+  \field{profileCompleted}    & \typ{Boolean} & \texttt{false} pour les patients OAuth en attente de complétion. \\
+  \field{createdAt / updatedAt}& \typ{Date}   & Timestamps automatiques Mongoose. \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{infobox}[title=Contrainte d'identifiant]
+  Un compte doit posséder au moins un identifiant parmi : \texttt{email}, \texttt{socialSecurityNumber} ou \texttt{googleId}. Vérifié dans le hook \texttt{pre('validate')}.
+\end{infobox}
+
+% ---- DoctorProfile ----
+\subsection{DoctorProfile}
+
+Profil enrichi du médecin, lié à son \texttt{Account} via \texttt{account: ObjectId}.
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{} l l X @{}}
+  \toprule
+  \textbf{Champ} & \textbf{Type} & \textbf{Description} \\
+  \midrule
+  \field{account}             & \typ{ObjectId$\to$Account}    & Compte d'authentification. \\
+  \field{firstName / lastName}& \typ{String}                  & Identité civile. \\
+  \field{specialties}         & \typ{[String]}                & Ex. : \texttt{["Cardiologie"]}. \\
+  \field{languages}           & \typ{[String]}                & Langues parlées. \\
+  \field{location}            & \typ{String}                  & Localisation dans l'établissement. \\
+  \field{sector}              & \typ{Number (1|2|3)}          & Secteur tarifaire CPAM. \\
+  \field{baseFee}             & \typ{Number}                  & Tarif de base de la consultation (€). \\
+  \field{fees}                & \typ{[\{code, label, price\}]}& Actes spécifiques (CCAM). \\
+  \field{schedule.workDays}   & \typ{[Enum]}                  & Jours de travail. \\
+  \field{schedule.startHour / endHour} & \typ{String HH:mm}  & Plage horaire par défaut. \\
+  \field{schedule.defaultDuration}& \typ{Number (15|30|60)}   & Durée standard en minutes. \\
+  \field{leaves}              & \typ{[Sous-doc]}              & Congés : startDate, endDate, reason. \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+% ---- PatientProfile ----
+\subsection{PatientProfile}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{} l l X @{}}
+  \toprule
+  \textbf{Champ} & \textbf{Type} & \textbf{Description} \\
+  \midrule
+  \field{account}             & \typ{ObjectId$\to$Account}  & Compte d'authentification. \\
+  \field{firstName / lastName}& \typ{String}                & Identité civile. \\
+  \field{dateOfBirth}         & \typ{Date}                  & Date de naissance. \\
+  \field{phoneNumber}         & \typ{String}                & Numéro de téléphone. \\
+  \field{dependents}          & \typ{[Sous-doc]}            & Ayants droit (enfant, conjoint, parent). \\
+  \field{dependents[].relation}& \typ{Enum}                 & \texttt{enfant | conjoint | parent} \\
+  \field{dependents[].allergies}& \typ{[String]}            & Allergies propres à l'ayant droit. \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+% ---- Appointment ----
+\subsection{Appointment}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{} l l X @{}}
+  \toprule
+  \textbf{Champ} & \textbf{Type} & \textbf{Description} \\
+  \midrule
+  \field{patient}             & \typ{ObjectId$\to$PatientProfile} & Null pour les blocs \texttt{indisponible}. \\
+  \field{doctor}              & \typ{ObjectId$\to$DoctorProfile}  & Médecin concerné. \\
+  \field{dependentId}         & \typ{ObjectId}                    & Sous-doc ayant droit, si applicable. \\
+  \field{startTime / endTime} & \typ{Date}                        & Plage temporelle du rendez-vous. \\
+  \field{duration}            & \typ{Number (15|30|60)}           & Durée en minutes. \\
+  \field{reason}              & \typ{String}                      & Motif de consultation. \\
+  \field{notes}               & \typ{String}                      & Remarques libres (secrétaire). \\
+  \field{room}                & \typ{String}                      & Salle affectée (\texttt{Facility.rooms[].roomName}). \\
+  \field{status}              & \typ{Enum}                        &
+    \texttt{en attente | confirmé | annulé | terminé |}
+    \texttt{indisponible | no-show} \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+Index composites : \texttt{\{doctor, startTime\}} et \texttt{\{patient, startTime desc\}}.
+
+% ---- MedicalRecord ----
+\subsection{MedicalRecord}
+
+Un seul document par patient (contrainte \texttt{unique} sur \texttt{patient}).
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{} l l X @{}}
+  \toprule
+  \textbf{Champ} & \textbf{Type} & \textbf{Description} \\
+  \midrule
+  \field{patient}                     & \typ{ObjectId$\to$PatientProfile}  & Référence unique. \\
+  \field{history}                     & \typ{[String]}                     & Antécédents médicaux. \\
+  \field{allergies}                   & \typ{[String]}                     & Allergies connues. \\
+  \field{consultations[].appointmentId}& \typ{ObjectId$\to$Appointment}    & RDV source. \\
+  \field{consultations[].doctorId}    & \typ{ObjectId$\to$DoctorProfile}   & Médecin rédacteur. \\
+  \field{consultations[].report}      & \typ{String}                       & Compte rendu structuré. \\
+  \field{consultations[].prescriptions}& \typ{[Sous-doc]}                  & Médicament, posologie, durée. \\
+  \field{attachments[].fileUrl}       & \typ{String}                       & Chemin serveur du fichier. \\
+  \field{attachments[].fileType}      & \typ{Enum}                         & \texttt{PDF | JPG | PNG | DICOM} \\
+  \field{attachments[].uploadedBy}    & \typ{ObjectId$\to$Account}         & Auteur du dépôt. \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+% ---- Invoice ----
+\subsection{Invoice}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{} l l X @{}}
+  \toprule
+  \textbf{Champ} & \textbf{Type} & \textbf{Description} \\
+  \midrule
+  \field{appointment} & \typ{ObjectId$\to$Appointment}   & RDV facturé. \\
+  \field{patient}     & \typ{ObjectId$\to$PatientProfile} & Patient facturé. \\
+  \field{doctor}      & \typ{ObjectId$\to$DoctorProfile}  & Médecin praticien. \\
+  \field{amount}      & \typ{Number}                      & Montant en euros. \\
+  \field{nomenclature}& \typ{String}                      & Code acte (ex. : \textit{Secteur 1 – CCAM}). \\
+  \field{status}      & \typ{Enum}                        & \texttt{payé | en attente | impayé} \\
+  \field{issuedAt}    & \typ{Date}                        & Date d'émission (défaut : maintenant). \\
+  \field{paidAt}      & \typ{Date}                        & Date de paiement effectif. \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+Index : \texttt{\{patient, status\}}.
+
+% ---- Facility ----
+\subsection{Facility}
+
+Collection singleton — un seul document représente la clinique.
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{} l l X @{}}
+  \toprule
+  \textbf{Champ} & \textbf{Type} & \textbf{Description} \\
+  \midrule
+  \field{name}                    & \typ{String}   & Nom de la clinique. \\
+  \field{address}                 & \typ{String}   & Adresse postale complète. \\
+  \field{contactEmail / Phone}    & \typ{String}   & Coordonnées de l'établissement. \\
+  \field{specialtiesOffered}      & \typ{[String]} & Spécialités disponibles. \\
+  \field{openingHours}            & \typ{String}   & Plage d'ouverture (texte libre). \\
+  \field{rooms[].roomName}        & \typ{String}   & Nom de la salle (ex. : \textit{Radiologie 1}). \\
+  \field{rooms[].equipment}       & \typ{[String]} & Équipements associés à la salle. \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+% ---- AuditLog ----
+\subsection{AuditLog}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{} l l X @{}}
+  \toprule
+  \textbf{Champ} & \textbf{Type} & \textbf{Description} \\
+  \midrule
+  \field{userAccount} & \typ{ObjectId$\to$Account} & Auteur de l'action. \\
+  \field{action}      & \typ{Enum}                 &
+    \texttt{CONNEXION}, \texttt{ACCES\_DOSSIER},
+    \texttt{MODIFICATION\_DOSSIER},
+    \texttt{CREATION\_COMPTE},
+    \texttt{EXPORT\_DONNEES} \\
+  \field{targetId}    & \typ{String}               & ID de la ressource cible. \\
+  \field{ipAddress}   & \typ{String}               & IP de la requête. \\
+  \field{details}     & \typ{String}               & Description libre de l'action. \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+% ---- Review ----
+\subsection{Review}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{} l l X @{}}
+  \toprule
+  \textbf{Champ} & \textbf{Type} & \textbf{Description} \\
+  \midrule
+  \field{appointment}  & \typ{ObjectId$\to$Appointment}   & RDV évalué (unique). \\
+  \field{patient}      & \typ{ObjectId$\to$PatientProfile} & Auteur de l'avis. \\
+  \field{doctor}       & \typ{ObjectId$\to$DoctorProfile}  & Médecin évalué. \\
+  \field{rating}       & \typ{Number (1--5)}               & Note de satisfaction. \\
+  \field{comment}      & \typ{String}                      & Commentaire libre. \\
+  \field{isIssueReport}& \typ{Boolean}                     & Signalement grave (défaut : false). \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+% ============================================================
+%  CHAPITRE 5 — API REST
+% ============================================================
+\chapter{Référence API REST}
+
+Toutes les routes sont préfixées par \texttt{/api}. La base URL par défaut est \texttt{http://localhost:3000}.
+
+\begin{infobox}[title=Convention d'authentification]
+  Toutes les routes protégées requièrent l'en-tête :
+  \texttt{Authorization: Bearer <jwt\_token>}\\
+  Un token absent ou expiré retourne \texttt{401 Unauthorized}.
+\end{infobox}
+
+\section{Authentification — \texttt{/api/auth}}
+
+\begin{center}
+\small
+\begin{tabular}{@{} l p{5.2cm} p{2.8cm} p{4.5cm} @{}}
+  \toprule
+  \textbf{Méth.} & \textbf{Endpoint} & \textbf{Accès} & \textbf{Description} \\
+  \midrule
+  \method{POST}  & \texttt{/register}         & Public       & Crée un compte (role, email/SSN, password). \\
+  \method{POST}  & \texttt{/login}            & Public       & Connexion par identifiant + password. Retourne JWT ou \texttt{tempToken} si 2FA activée. \\
+  \method{POST}  & \texttt{/google}           & Public       & Connexion Google OAuth (\texttt{idToken}). \\
+  \method{POST}  & \texttt{/2fa/verify}       & Public       & Vérifie le code TOTP, retourne le JWT final. \\
+  \method{GET}   & \texttt{/me}               & Authentifié  & Profil du compte connecté. \\
+  \method{PATCH} & \texttt{/me}               & Authentifié  & Mise à jour du profil patient. \\
+  \method{POST}  & \texttt{/complete-profile} & Authentifié  & Complétion profil (patients Google OAuth). \\
+  \method{POST}  & \texttt{/2fa/setup}        & Admin        & Génère secret TOTP + QR Code. \\
+  \method{POST}  & \texttt{/2fa/confirm-setup}& Admin        & Active la 2FA après vérification du premier code. \\
+  \method{POST}  & \texttt{/2fa/disable}      & Admin        & Désactive la 2FA. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Rendez-vous — \texttt{/api/appointments}}
+
+\begin{center}
+\small
+\begin{tabular}{@{} l p{4.5cm} p{3.8cm} p{4.5cm} @{}}
+  \toprule
+  \textbf{Méth.} & \textbf{Endpoint} & \textbf{Rôles} & \textbf{Description} \\
+  \midrule
+  \method{POST}  & \texttt{/}                  & patient, secretaire, admin & Crée un rendez-vous. \\
+  \method{GET}   & \texttt{/}                  & secretaire, admin          & Planning complet. \\
+  \method{GET}   & \texttt{/my-appointments}   & patient                    & Historique du patient connecté. \\
+  \method{GET}   & \texttt{/available-slots}   & patient, secretaire, admin & Créneaux libres d'un médecin. \\
+  \method{GET}   & \texttt{/doctor/daily}      & medecin                    & Planning journalier du médecin. \\
+  \method{PATCH} & \texttt{/:id/cancel}        & Authentifié                & Annule un rendez-vous. \\
+  \method{PATCH} & \texttt{/:id/reschedule}    & Authentifié                & Reprogramme un rendez-vous. \\
+  \method{POST}  & \texttt{/unavailability}    & medecin                    & Bloque un créneau. \\
+  \method{PATCH} & \texttt{/:id/confirm}       & secretaire, admin          & Confirme un rendez-vous. \\
+  \method{PATCH} & \texttt{/:id/no-show}       & secretaire, admin          & Marque un patient absent. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Médecins — \texttt{/api/doctors}}
+
+\begin{center}
+\small
+\begin{tabular}{@{} l p{4.5cm} p{4cm} p{4.5cm} @{}}
+  \toprule
+  \textbf{Méth.} & \textbf{Endpoint} & \textbf{Rôles} & \textbf{Description} \\
+  \midrule
+  \method{GET}    & \texttt{/search}       & Tous les rôles & Recherche par spécialité, langue, nom. \\
+  \method{GET}    & \texttt{/me}           & medecin        & Profil du médecin connecté. \\
+  \method{PATCH}  & \texttt{/me}           & medecin        & Mise à jour du profil. \\
+  \method{POST}   & \texttt{/me/leaves}    & medecin        & Ajout d'un congé. \\
+  \method{GET}    & \texttt{/me/leaves}    & medecin        & Liste des congés. \\
+  \method{DELETE} & \texttt{/me/leaves/:lid} & medecin      & Suppression d'un congé. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Dossiers Médicaux — \texttt{/api/records}}
+
+\begin{center}
+\small
+\begin{tabular}{@{} l p{5.5cm} p{3.2cm} p{3.8cm} @{}}
+  \toprule
+  \textbf{Méth.} & \textbf{Endpoint} & \textbf{Rôles} & \textbf{Description} \\
+  \midrule
+  \method{POST}  & \texttt{/}                    & medecin              & Ajout d'une consultation. \\
+  \method{PATCH} & \texttt{/my-record}           & patient              & Mise à jour antécédents / allergies. \\
+  \method{POST}  & \texttt{/upload}              & patient              & Dépôt d'un document (20 Mo max). \\
+  \method{POST}  & \texttt{/upload/:patientId}   & medecin              & Dépôt pour un patient tiers. \\
+  \method{GET}   & \texttt{/my-record}           & patient              & Consultation du dossier personnel. \\
+  \method{GET}   & \texttt{/my-record/}%
+                   \texttt{consultations/:id/}%
+                   \texttt{prescription/pdf}      & patient              & Ordonnance PDF. \\
+  \method{GET}   & \texttt{/patient/:patientId}  & medecin, secret., admin & Dossier d'un patient tiers. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Factures — \texttt{/api/invoices}}
+
+\begin{center}
+\small
+\begin{tabular}{@{} l p{5cm} p{3.5cm} p{4cm} @{}}
+  \toprule
+  \textbf{Méth.} & \textbf{Endpoint} & \textbf{Rôles} & \textbf{Description} \\
+  \midrule
+  \method{POST}  & \texttt{/}                    & secretaire, admin & Création d'une facture. \\
+  \method{GET}   & \texttt{/mine}                & patient           & Factures du patient connecté. \\
+  \method{GET}   & \texttt{/}                    & secretaire, admin & Toutes les factures. \\
+  \method{GET}   & \texttt{/overdue}             & secretaire, admin & Factures impayées > 30 jours. \\
+  \method{GET}   & \texttt{/:id/pdf}             & patient, secret., admin & Téléchargement PDF. \\
+  \method{GET}   & \texttt{/:id/feuille-soins}   & secretaire, admin & Feuille de soins CPAM. \\
+  \method{POST}  & \texttt{/:id/send-email}      & secretaire, admin & Envoi par e-mail au patient. \\
+  \method{PATCH} & \texttt{/:id/pay}             & secretaire, admin & Marque la facture payée. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Administration — \texttt{/api/admin}}
+
+\begin{center}
+\small
+\begin{tabular}{@{} l p{4.5cm} p{3.5cm} p{4.5cm} @{}}
+  \toprule
+  \textbf{Méth.} & \textbf{Endpoint} & \textbf{Rôles} & \textbf{Description} \\
+  \midrule
+  \method{POST}   & \texttt{/create-staff}  & admin             & Création d'un compte médecin ou secrétaire. \\
+  \method{GET}    & \texttt{/staff}         & admin             & Liste du personnel. \\
+  \method{PATCH}  & \texttt{/staff/:id}     & admin             & Mise à jour d'un membre du personnel. \\
+  \method{DELETE} & \texttt{/accounts/:id}  & admin             & Suppression d'un compte. \\
+  \method{GET}    & \texttt{/patients}      & secretaire, admin & Liste des patients. \\
+  \method{GET}    & \texttt{/audit}         & admin             & Journal d'audit paginé. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Établissement, Analytics et Avis}
+
+\begin{center}
+\small
+\begin{tabular}{@{} l p{4.5cm} p{3.5cm} p{4.5cm} @{}}
+  \toprule
+  \textbf{Méth.} & \textbf{Endpoint} & \textbf{Rôles} & \textbf{Description} \\
+  \midrule
+  \method{GET}    & \texttt{/api/facility}          & Tous              & Informations de la clinique. \\
+  \method{PUT}    & \texttt{/api/facility}          & admin             & Création ou mise à jour (upsert). \\
+  \method{POST}   & \texttt{/api/facility/rooms}    & admin             & Ajout d'une salle. \\
+  \method{DELETE} & \texttt{/api/facility/rooms/:rid}& admin            & Suppression d'une salle. \\
+  \midrule
+  \method{GET}    & \texttt{/api/analytics/kpis}    & admin             & KPIs : revenus, RDV, patients. \\
+  \method{GET}    & \texttt{/api/analytics/revenue} & admin             & Revenus par médecin. \\
+  \method{GET}    & \texttt{/api/analytics/export.pdf}  & admin         & Rapport PDF. \\
+  \method{GET}    & \texttt{/api/analytics/export.xlsx} & admin         & Rapport XLSX. \\
+  \midrule
+  \method{POST}   & \texttt{/api/reviews}           & patient           & Dépôt d'un avis post-consultation. \\
+  \method{GET}    & \texttt{/health}                & Public            & Vérification de santé du serveur. \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+% ============================================================
+%  CHAPITRE 6 — SÉCURITÉ
+% ============================================================
+\chapter{Sécurité}
+
+\section{Authentification et Autorisation}
+
+\begin{itemize}[leftmargin=*,itemsep=3pt]
+  \item \textbf{JWT HS256} — Tokens signés avec \texttt{JWT\_SECRET}. Durée de validité 7 jours. Le middleware \texttt{protect} vérifie la signature et charge l'utilisateur depuis MongoDB à chaque requête.
+  \item \textbf{RBAC} — Le middleware \texttt{authorize(...roles)} compare \texttt{req.user.role} à la liste des rôles autorisés et retourne \texttt{403 Forbidden} en cas d'incompatibilité.
+  \item \textbf{Hachage des mots de passe} — bcryptjs avec salt de 10 rondes, déclenché automatiquement par le hook \texttt{pre('save')} dès que le champ \texttt{password} est modifié.
+  \item \textbf{TOTP 2FA} — Speakeasy génère un secret Base32. L'administrateur scanne un QR Code (qrcode), puis valide via un code 6 chiffres. Un \texttt{tempToken} JWT de courte durée est émis après le premier facteur ; le JWT final n'est délivré qu'après validation TOTP.
+  \item \textbf{Google OAuth} — \texttt{google-auth-library} vérifie l'\texttt{idToken} côté serveur, évitant toute falsification côté client.
+\end{itemize}
+
+\section{Validation des Entrées}
+
+\texttt{express-validator} valide les corps de requêtes. Le middleware \texttt{validate} centralise la réponse \texttt{422} avec le tableau d'erreurs. Les expressions régulières (format e-mail, complexité mot de passe, format date) sont définies directement dans les routes.
+
+\section{Téléversement de Fichiers}
+
+Multer est configuré avec un filtre MIME (PDF, JPEG, PNG, DICOM uniquement) et une limite de 20 Mo par fichier. Les fichiers sont stockés dans \texttt{uploads/} et servis en statique via Express.
+
+\section{CORS}
+
+L'origine autorisée est restreinte à \texttt{FRONTEND\_URL}. En son absence, la valeur par défaut \texttt{http://localhost:4200} est utilisée.
+
+\section{Journal d'Audit (RGPD)}
+
+Chaque accès sensible (connexion, consultation de dossier, création de compte, export) est enregistré dans la collection \texttt{AuditLog} via \texttt{auditLogger.js}. L'administrateur consulte ce journal paginé depuis l'interface d'administration.
+
+% ============================================================
+%  CHAPITRE 7 — INSTALLATION ET DÉMARRAGE
+% ============================================================
+\chapter{Installation et Démarrage}
+
+\section{Prérequis}
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item Node.js \textbf{18 LTS} ou supérieur
+  \item npm \textbf{9+}
+  \item MongoDB \textbf{6+} (instance locale ou Atlas)
+  \item Angular CLI : \texttt{npm install -g @angular/cli@17}
+\end{itemize}
+
+\section{Variables d'Environnement (Backend)}
+
+Créer \texttt{backend/.env} à partir de \texttt{backend/.env.example} :
+
+\begin{lstlisting}[style=bash]
+PORT=3000
+MONGODB_URI=mongodb://localhost:27017/medisync
+JWT_SECRET=change_me_in_production_long_random_string
+FRONTEND_URL=http://localhost:4200
+# Optionnel - e-mails desactives si absent :
+RESEND_API_KEY=re_xxxxxxxxxxxxxxxxxxxx
+# Optionnel - Google OAuth desactive si absent :
+GOOGLE_CLIENT_ID=xxxx.apps.googleusercontent.com
+\end{lstlisting}
+
+\begin{warnbox}[title=Important]
+  Ne jamais commiter le fichier \texttt{.env}. Le \texttt{.gitignore} l'exclut par défaut.
+\end{warnbox}
+
+\section{Installation des Dépendances}
+
+\begin{lstlisting}[style=bash]
+# Backend
+cd backend && npm install
+
+# Frontend
+cd ../frontend && npm install
+\end{lstlisting}
+
+\section{Démarrage des Services}
+
+Ouvrir \textbf{trois terminaux distincts} :
+
+\begin{lstlisting}[style=bash]
+# Terminal 1 - Base de donnees MongoDB
+mkdir -p ~/mongo-data
+mongod --dbpath ~/mongo-data --port 27017
+
+# Terminal 2 - Backend Express
+cd backend
+node seed.js     # Uniquement au premier lancement
+node server.js   # ou "npm run dev" pour rechargement auto
+
+# Terminal 3 - Frontend Angular
+cd frontend
+ng serve         # Ecoute sur http://localhost:4200
+\end{lstlisting}
+
+\begin{infobox}[title=Socket MongoDB bloqué]
+  Si MongoDB ne démarre pas à cause d'un socket résiduel :\\
+  \texttt{sudo rm /tmp/mongodb-27017.sock}
+\end{infobox}
+
+\section{Comptes de Démonstration}
+
+Après \texttt{node seed.js}, les comptes suivants sont disponibles (mot de passe universel : \textbf{\texttt{Demo1234!}}) :
+
+\begin{center}
+\small
+\begin{tabular}{@{} l l l @{}}
+  \toprule
+  \textbf{Rôle} & \textbf{E-mail} & \textbf{Mot de passe} \\
+  \midrule
+  Administrateur & \texttt{admin@medisync.demo}     & \texttt{Demo1234!} \\
+  Médecin        & \texttt{doctor@medisync.demo}    & \texttt{Demo1234!} \\
+  Secrétaire     & \texttt{secretary@medisync.demo} & \texttt{Demo1234!} \\
+  Patient 1      & \texttt{patient@medisync.demo}   & \texttt{Demo1234!} \\
+  Patient 2      & \texttt{patient2@medisync.demo}  & \texttt{Demo1234!} \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\section{Build de Production}
+
+\begin{lstlisting}[style=bash]
+cd frontend
+ng build --configuration=production
+# Les fichiers compiles se trouvent dans frontend/dist/
+\end{lstlisting}
+
+% ============================================================
+%  CHAPITRE 8 — FONCTIONNALITÉS DÉTAILLÉES PAR RÔLE
+% ============================================================
+\chapter{Fonctionnalités Détaillées par Rôle}
+
+\section{Portail Patient}
+
+\begin{itemize}[leftmargin=*,itemsep=3pt]
+  \item \textbf{Tableau de bord} : Statistiques personnelles (nombre de rendez-vous, prochaine consultation, factures en attente).
+  \item \textbf{Recherche de médecins} : Filtrage par spécialité, langue et nom. Affichage des tarifs, secteur et disponibilités.
+  \item \textbf{Prise de rendez-vous} : Sélection de médecin, calendrier, créneaux disponibles en temps réel, durée, motif.
+  \item \textbf{Mes rendez-vous} : Historique paginé avec badges de statut, actions d'annulation.
+  \item \textbf{Dossier médical} : Antécédents, allergies, consultations passées, ordonnances en PDF, pièces jointes.
+  \item \textbf{Mes factures} : Historique des factures avec téléchargement PDF.
+  \item \textbf{Avis} : Dépôt d'un avis noté (1–5 étoiles) après consultation terminée.
+\end{itemize}
+
+\section{Portail Médecin}
+
+\begin{itemize}[leftmargin=*,itemsep=3pt]
+  \item \textbf{Planning journalier} : Calendrier du jour avec code couleur par statut. Accès au formulaire de consultation directement depuis un RDV.
+  \item \textbf{Formulaire de consultation} : Compte rendu structuré, prescriptions (médicament, posologie, durée), pièces jointes, changement de statut vers \textit{terminé}.
+  \item \textbf{Congés} : Création de périodes de congés (dates + motif). Les congés bloquent automatiquement la prise de RDV pendant la période.
+  \item \textbf{Profil} : Mise à jour des spécialités, langues, horaires, tarifs et actes CCAM.
+\end{itemize}
+
+\section{Portail Secrétaire}
+
+\begin{itemize}[leftmargin=*,itemsep=3pt]
+  \item \textbf{Planning global} : Vue hebdomadaire de tous les RDV. Actions : confirmation, no-show, rescheduling.
+  \item \textbf{Patients} : Recherche, consultation et création de nouveaux dossiers.
+  \item \textbf{Facturation} : Émission de factures pour les consultations terminées, suivi des impayés (> 30 j), envoi par e-mail, marquage de paiement.
+\end{itemize}
+
+\section{Portail Administrateur}
+
+\begin{itemize}[leftmargin=*,itemsep=3pt]
+  \item \textbf{Tableau de bord} : KPIs (revenus du mois, taux d'occupation, nouveaux patients). Raccourcis de navigation rapide.
+  \item \textbf{Personnel} : CRUD des comptes médecins et secrétaires.
+  \item \textbf{Établissement} : Informations de la clinique, gestion des salles et équipements.
+  \item \textbf{Analytics} : Graphiques de revenus et répartition par médecin. Export PDF et XLSX.
+  \item \textbf{Journal d'audit} : Consultation paginée des événements de sécurité tracés.
+  \item \textbf{Sécurité 2FA} : Configuration du second facteur TOTP (QR Code + vérification).
+\end{itemize}
+
+% ============================================================
+%  CHAPITRE 9 — MODULES FRONTEND
+% ============================================================
+\chapter{Modules et Services Frontend}
+
+\section{Architecture Angular}
+
+MediSync utilise l'architecture \textbf{Standalone Components} d'Angular 17 (sans NgModule). Le découpage est :
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Core} — Guards, intercepteurs, services, modèles, utilitaires. Aucune dépendance sur les features.
+  \item \textbf{Features} — Cinq répertoires isolés : \texttt{auth}, \texttt{patient}, \texttt{practitioner}, \texttt{secretary}, \texttt{admin}. Chaque feature expose un composant shell avec lazy loading.
+\end{itemize}
+
+\section{Services Angular}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{} l X @{}}
+  \toprule
+  \textbf{Service} & \textbf{Responsabilités} \\
+  \midrule
+  \texttt{AuthService}        & Login, register, Google OAuth, 2FA, logout, \texttt{/auth/me}. \\
+  \texttt{AppointmentService} & CRUD RDV, créneaux disponibles, planning journalier médecin. \\
+  \texttt{DoctorService}      & Recherche médecins, profil propre, gestion des congés. \\
+  \texttt{RecordService}      & Dossier médical, upload de fichiers, ordonnance PDF. \\
+  \texttt{InvoiceService}     & Création, listage, statut, PDF, e-mail de factures. \\
+  \texttt{AdminService}       & CRUD personnel, liste patients, journal d'audit. \\
+  \texttt{FacilityService}    & Informations clinique, CRUD salles. \\
+  \texttt{AnalyticsService}   & KPIs, revenus, export. \\
+  \texttt{ReviewService}      & Dépôt d'avis post-consultation. \\
+  \texttt{GoogleAuthService}  & Chargement script Google et popup OAuth. \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\section{Guards et Intercepteurs}
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{} l X @{}}
+  \toprule
+  \textbf{Composant} & \textbf{Comportement} \\
+  \midrule
+  \texttt{AuthGuard}       & Redirige vers \texttt{/login} si aucun token JWT présent. \\
+  \texttt{RoleGuard}       & Lit le rôle depuis le token décodé et redirige si incompatible avec la route. \\
+  \texttt{AuthInterceptor} & Injecte \texttt{Authorization: Bearer <token>} sur chaque requête sortante. \\
+  \texttt{ErrorInterceptor}& Intercepte les erreurs \texttt{401} et déclenche \texttt{AuthService.logout()}. \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+% ============================================================
+%  CHAPITRE 10 — SERVICES TRANSVERSAUX
+% ============================================================
+\chapter{Services Transversaux}
+
+\section{Notifications E-mail}
+
+Le service \texttt{emailService.js} utilise l'API Resend pour les e-mails transactionnels. Les templates HTML (confirmation, rappel 24h, facture) sont dans \texttt{emailTemplates.js}.
+
+La fonction \texttt{sendNotification()} est appelée en mode \textit{fire-and-forget} (\texttt{.catch(() => \{\})}) pour éviter tout blocage des requêtes HTTP si le service e-mail est indisponible ou si la clé API est absente.
+
+\section{Rappels Automatiques}
+
+\texttt{reminderScheduler.js} utilise \texttt{node-cron} pour exécuter une tâche \textbf{toutes les heures} : elle interroge MongoDB pour trouver les rendez-vous confirmés dans les 24 heures à venir et envoie un e-mail de rappel au patient.
+
+\section{Génération PDF}
+
+\texttt{pdfGenerator.js} utilise PDFKit pour générer :
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item Les \textbf{factures} patient (entête clinique, détail acte, montant, statut).
+  \item Les \textbf{feuilles de soins} (formulaire Sécurité Sociale).
+  \item Les \textbf{ordonnances} avec prescriptions médicamenteuses.
+  \item Les \textbf{rapports analytiques} pour l'administrateur.
+\end{itemize}
+
+\section{Export Excel}
+
+\texttt{analyticsController.js} utilise ExcelJS pour générer des fichiers XLSX avec les données de revenus et KPIs, téléchargeables depuis l'interface d'administration.
+
+% ============================================================
+%  ANNEXES
+% ============================================================
+\appendix
+
+\chapter{Codes de Statut HTTP}
+
+\begin{center}
+\small
+\begin{tabular}{@{} r l p{7cm} @{}}
+  \toprule
+  \textbf{Code} & \textbf{Signification} & \textbf{Utilisation dans MediSync} \\
+  \midrule
+  200 & OK                    & Requête réussie \\
+  201 & Created               & Ressource créée (RDV, facture, compte) \\
+  400 & Bad Request           & Corps de requête invalide \\
+  401 & Unauthorized          & Token absent, invalide ou expiré \\
+  403 & Forbidden             & Rôle insuffisant \\
+  404 & Not Found             & Ressource introuvable \\
+  409 & Conflict              & Conflit (créneau déjà pris, doublon) \\
+  422 & Unprocessable Entity  & Erreurs de validation (express-validator) \\
+  500 & Internal Server Error & Erreur non gérée côté serveur \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\chapter{Statuts des Rendez-vous}
+
+\begin{center}
+\small
+\begin{tabular}{@{} l l p{7cm} @{}}
+  \toprule
+  \textbf{Statut} & \textbf{Acteur} & \textbf{Description} \\
+  \midrule
+  \texttt{en attente}  & Système              & État initial après création par un patient. \\
+  \texttt{confirmé}    & Secrétaire / Admin   & RDV validé, rappel e-mail activé. \\
+  \texttt{annulé}      & Tout acteur          & RDV annulé avant la consultation. \\
+  \texttt{terminé}     & Médecin              & Consultation réalisée, dossier mis à jour. \\
+  \texttt{no-show}     & Secrétaire / Admin   & Patient absent sans annulation. \\
+  \texttt{indisponible}& Médecin              & Créneau bloqué (pas de patient associé). \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\chapter{Structure du Token JWT}
+
+Le payload JWT contient les informations minimales nécessaires à l'autorisation :
+
+\begin{lstlisting}
+{
+  "id":   "ObjectId du compte Account",
+  "role": "patient | medecin | secretaire | administrateur",
+  "iat":  1716000000,
+  "exp":  1716604800
+}
+\end{lstlisting}
+
+La durée de validité est de \textbf{7 jours} (\texttt{7d}). Le secret de signature est \texttt{JWT\_SECRET} défini dans \texttt{.env}.
+
+\end{document}
