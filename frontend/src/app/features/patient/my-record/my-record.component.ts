@@ -181,7 +181,7 @@ import { environment } from '../../../../environments/environment';
               <mat-icon style="font-size:20px;width:20px;height:20px">description</mat-icon>
             </div>
             <div style="min-width:0">
-              <div style="font-weight:600;font-size:14px;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">{{ att.fileName }}</div>
+              <div style="font-weight:600;font-size:14px;color:var(--text);word-break:break-all">{{ att.fileName }}</div>
               <div style="font-size:12px;color:var(--text-muted)">
                 {{ att.fileType }} · {{ att.uploadedAt | date:'d MMM y':'':'fr' }}
               </div>

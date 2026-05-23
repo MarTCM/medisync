@@ -75,10 +75,10 @@ import { CONSULTATION_TEMPLATES, getTemplateForSpecialty, listTemplates } from '
           </div>
           <div *ngIf="record.consultations?.length">
             <strong>Dernière consultation :</strong>
-            <span style="color:#444; margin-left:6px">
-              {{ record.consultations[record.consultations.length - 1].date | date:'d MMM y':'':'fr' }}
-              — {{ record.consultations[record.consultations.length - 1].report | slice:0:80 }}…
-            </span>
+            <div style="color:#444; margin-top:4px; white-space:pre-wrap; word-break:break-word">
+              <span style="font-weight:500">{{ record.consultations[record.consultations.length - 1].date | date:'d MMM y':'':'fr' }}</span>
+              — {{ record.consultations[record.consultations.length - 1].report }}
+            </div>
           </div>
           <div *ngIf="record.attachments?.length" style="margin-top:10px">
             <strong>Documents du patient :</strong>
