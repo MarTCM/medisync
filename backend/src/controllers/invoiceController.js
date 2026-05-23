@@ -2,6 +2,7 @@ const PDFDocument = require('pdfkit');
 const Invoice = require('../models/Invoice');
 const PatientProfile = require('../models/PatientProfile');
 const { sendNotification } = require('../utils/emailService');
+const { invoiceEmailTemplate } = require('../utils/emailTemplates');
 
 // ==========================================
 // 1. CRÉER UNE FACTURE (Indispensable pour tester)
@@ -118,12 +119,17 @@ exports.sendInvoiceEmail = async (req, res) => {
       };
 
       try {
-        await sendNotification(
-          patientEmail,
-          "Votre facture MediSync",
-          `Bonjour ${invoice.patient.firstName},\n\nVeuillez trouver ci-joint votre facture.\n\nCordialement,\nClinique MediSync.`,
-          pdfAttachment
-        );
+        const { subject, html, text } = await invoiceEmailTemplate({
+          patientFirstName: invoice.patient.firstName,
+          patientLastName:  invoice.patient.lastName,
+          invoiceId:        invoice._id,
+          amount:           invoice.amount,
+          nomenclature:     invoice.nomenclature,
+          issuedAt:         invoice.issuedAt,
+          doctorFirstName:  invoice.doctor.firstName,
+          doctorLastName:   invoice.doctor.lastName,
+        });
+        await sendNotification(patientEmail, subject, text, pdfAttachment, html);
         res.status(200).json({ message: "Facture générée et envoyée par email avec succès !" });
       } catch (emailErr) {
         res.status(500).json({ message: "Erreur lors de l'envoi de l'email", error: emailErr.message });

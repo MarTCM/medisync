@@ -2,6 +2,7 @@ const Appointment = require('../models/Appointment');
 const PatientProfile = require('../models/PatientProfile');
 const DoctorProfile = require('../models/DoctorProfile');
 const { sendNotification } = require('../utils/emailService');
+const { bookingConfirmationTemplate, rescheduleNotificationTemplate, secretaryConfirmationTemplate } = require('../utils/emailTemplates');
 
 // Resolve dependent info from a populated patient object and attach it to each appointment plain object
 function enrichWithDependent(appointments) {
@@ -90,11 +91,14 @@ exports.createAppointment = async (req, res) => {
 
     const patientWithAccount = await PatientProfile.findById(targetPatientProfile._id).populate('account', 'email');
     const patientEmail = patientWithAccount?.account?.email;
-    sendNotification(
-      patientEmail,
-      "Confirmation de votre rendez-vous - MediSync",
-      `Bonjour, votre rendez-vous du ${date} à ${time} a été pris en compte.`
-    ).catch(() => {});
+    const doctorProfile = await DoctorProfile.findById(doctorId).select('firstName lastName');
+    bookingConfirmationTemplate({
+      patientFirstName: targetPatientProfile.firstName,
+      patientLastName:  targetPatientProfile.lastName,
+      date, time, duration, reason,
+      notes: notes || '—',
+      doctorName: doctorProfile ? `Dr. ${doctorProfile.firstName} ${doctorProfile.lastName}` : 'votre médecin',
+    }).then(({ subject, html, text }) => sendNotification(patientEmail, subject, text, null, html)).catch(() => {});
 
     res.status(201).json({
       message: "Rendez-vous créé avec succès",
@@ -156,7 +160,9 @@ exports.updateAppointment = async (req, res) => {
     const { date, time } = req.body;
 
     const startDateTime = new Date(`${date}T${time}`);
-    const existing = await Appointment.findById(id);
+    const existing = await Appointment.findById(id)
+      .populate('patient', 'firstName lastName')
+      .populate('doctor', 'firstName lastName');
     const endDateTime = existing
       ? new Date(startDateTime.getTime() + existing.duration * 60000)
       : startDateTime;
@@ -172,11 +178,15 @@ exports.updateAppointment = async (req, res) => {
     }
 
     try {
-      await sendNotification(
-        req.user.email,
-        "Modification de votre rendez-vous - MediSync",
-        `Bonjour, votre rendez-vous a été déplacé au ${date} à ${time}.`
-      );
+      const { subject, html, text } = await rescheduleNotificationTemplate({
+        patientFirstName: existing.patient?.firstName || '',
+        patientLastName:  existing.patient?.lastName  || '',
+        date, time,
+        duration: existing.duration,
+        reason:   existing.reason,
+        doctorName: existing.doctor ? `Dr. ${existing.doctor.firstName} ${existing.doctor.lastName}` : 'votre médecin',
+      });
+      await sendNotification(req.user.email, subject, text, null, html);
     } catch (err) {
       console.error("Erreur email modification");
     }
@@ -348,7 +358,7 @@ exports.confirmAppointment = async (req, res) => {
       req.params.id,
       { status: 'confirmé' },
       { new: true }
-    ).populate('patient');
+    ).populate('patient').populate('doctor', 'firstName lastName specialties');
 
     if (!appointment) {
       return res.status(404).json({ message: "Rendez-vous introuvable." });
@@ -356,10 +366,18 @@ exports.confirmAppointment = async (req, res) => {
 
     if (appointment.patient) {
       const patientWithAccount = await PatientProfile.findById(appointment.patient._id).populate('account', 'email');
-      sendNotification(
-        patientWithAccount?.account?.email,
-        "Confirmation de votre rendez-vous - MediSync",
-        `Bonjour, la secrétaire a confirmé votre rendez-vous du ${appointment.startTime.toLocaleDateString('fr-FR')}.`
+      secretaryConfirmationTemplate({
+        patientFirstName:  appointment.patient.firstName,
+        patientLastName:   appointment.patient.lastName,
+        startTime:         appointment.startTime,
+        duration:          appointment.duration,
+        reason:            appointment.reason,
+        notes:             appointment.notes || '—',
+        doctorFirstName:   appointment.doctor?.firstName || '',
+        doctorLastName:    appointment.doctor?.lastName  || '',
+        doctorSpecialties: appointment.doctor?.specialties || [],
+      }).then(({ subject, html, text }) =>
+        sendNotification(patientWithAccount?.account?.email, subject, text, null, html)
       ).catch(() => {});
     }
 

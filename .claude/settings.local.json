@@ -52,7 +52,13 @@
       "Bash(curl -sS 'http://localhost:3000/api/admin/audit-log?page=1&limit=5' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMTA1ZTRlMGQ2MzMzZGY5ZmQ1MTFlOSIsImlhdCI6MTc3OTQ1OTc4OCwiZXhwIjoxNzc5NTQ2MTg4fQ.chuoEFFBNQI5xuNUkKsBTniE3iQt374NEyC7eFyrpYY')",
       "Bash(curl -sS 'http://localhost:3000/api/admin/audit?page=1&limit=5' -H 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjZhMTA1ZTRlMGQ2MzMzZGY5ZmQ1MTFlOSIsImlhdCI6MTc3OTQ1OTc4OCwiZXhwIjoxNzc5NTQ2MTg4fQ.chuoEFFBNQI5xuNUkKsBTniE3iQt374NEyC7eFyrpYY')",
       "Bash(ls /home/martcm/.claude/projects/-home-martcm-Desktop-Dev-Angular-medisync/memory/)",
-      "Read(//home/martcm/.claude/projects/-home-martcm-Desktop-Dev-Angular-medisync/memory/**)"
+      "Read(//home/martcm/.claude/projects/-home-martcm-Desktop-Dev-Angular-medisync/memory/**)",
+      "Bash(node -e \"require\\('./backend/src/utils/emailTemplates'\\)\")",
+      "Bash(node --check src/utils/emailTemplates.js)",
+      "Bash(node --check src/utils/emailService.js)",
+      "Bash(node --check src/utils/reminderScheduler.js)",
+      "Bash(node --check src/controllers/appointmentController.js)",
+      "Bash(node --check src/controllers/invoiceController.js)"
     ]
   }
 }

@@ -1,7 +1,23 @@
 const { Resend } = require('resend');
+const Facility = require('../models/Facility');
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 const FROM = process.env.EMAIL_FROM || 'Clinique MediSync <onboarding@resend.dev>';
+
+let _facilityCache = null;
+
+exports.getFacilityInfo = async () => {
+  if (!_facilityCache) {
+    const f = await Facility.findOne();
+    _facilityCache = {
+      name:         f?.name         || 'Clinique MediSync',
+      address:      f?.address      || '',
+      contactPhone: f?.contactPhone || '',
+      contactEmail: f?.contactEmail || '',
+    };
+  }
+  return _facilityCache;
+};
 
 exports.verifyTransporter = async () => {
   if (!process.env.RESEND_API_KEY) {
@@ -12,7 +28,7 @@ exports.verifyTransporter = async () => {
   return true;
 };
 
-exports.sendNotification = async (to, subject, text, attachment = null) => {
+exports.sendNotification = async (to, subject, text, attachment = null, html = null) => {
   try {
     if (!to) {
       console.warn('sendNotification: no recipient address provided, skipping.');
@@ -20,6 +36,8 @@ exports.sendNotification = async (to, subject, text, attachment = null) => {
     }
 
     const payload = { from: FROM, to, subject, text };
+
+    if (html) payload.html = html;
 
     if (attachment) {
       payload.attachments = [{

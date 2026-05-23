@@ -1,6 +1,7 @@
 const cron = require('node-cron');
 const Appointment = require('../models/Appointment');
 const { sendNotification } = require('./emailService');
+const { reminder24hTemplate, reminder1hTemplate } = require('./emailTemplates');
 
 // Toutes les heures, vérifier les rendez-vous imminents
 cron.schedule('0 * * * *', async () => {
@@ -15,16 +16,23 @@ cron.schedule('0 * * * *', async () => {
     const appointments24h = await Appointment.find({
       startTime: { $gte: windowStart24h, $lte: windowEnd24h },
       status: 'confirmé'
-    }).populate({ path: 'patient', populate: { path: 'account', select: 'email' } });
+    })
+      .populate({ path: 'patient', populate: { path: 'account', select: 'email' } })
+      .populate('doctor', 'firstName lastName');
 
     for (const app of appointments24h) {
       const email = app.patient?.account?.email;
       if (email) {
-        sendNotification(
-          email,
-          "Rappel : Votre RDV MediSync dans 24h",
-          `Bonjour, n'oubliez pas votre rendez-vous demain à ${app.startTime.toLocaleTimeString('fr-FR')}.`
-        ).catch(err => console.error("Erreur rappel 24h:", err.message));
+        const doctorName = app.doctor ? `Dr. ${app.doctor.firstName} ${app.doctor.lastName}` : 'votre médecin';
+        reminder24hTemplate({
+          patientFirstName: app.patient.firstName,
+          patientLastName:  app.patient.lastName,
+          startTime: app.startTime,
+          duration:  app.duration,
+          reason:    app.reason,
+          doctorName,
+        }).then(({ subject, html, text }) => sendNotification(email, subject, text, null, html))
+          .catch(err => console.error("Erreur rappel 24h:", err.message));
       }
     }
   } catch (err) {
@@ -40,16 +48,23 @@ cron.schedule('0 * * * *', async () => {
     const appointments1h = await Appointment.find({
       startTime: { $gte: windowStart1h, $lte: windowEnd1h },
       status: 'confirmé'
-    }).populate({ path: 'patient', populate: { path: 'account', select: 'email' } });
+    })
+      .populate({ path: 'patient', populate: { path: 'account', select: 'email' } })
+      .populate('doctor', 'firstName lastName');
 
     for (const app of appointments1h) {
       const email = app.patient?.account?.email;
       if (email) {
-        sendNotification(
-          email,
-          "Rappel imminent : Votre RDV MediSync dans 1 heure",
-          `Bonjour, votre rendez-vous commence dans une heure à ${app.startTime.toLocaleTimeString('fr-FR')}.`
-        ).catch(err => console.error("Erreur rappel 1h:", err.message));
+        const doctorName = app.doctor ? `Dr. ${app.doctor.firstName} ${app.doctor.lastName}` : 'votre médecin';
+        reminder1hTemplate({
+          patientFirstName: app.patient.firstName,
+          patientLastName:  app.patient.lastName,
+          startTime: app.startTime,
+          duration:  app.duration,
+          reason:    app.reason,
+          doctorName,
+        }).then(({ subject, html, text }) => sendNotification(email, subject, text, null, html))
+          .catch(err => console.error("Erreur rappel 1h:", err.message));
       }
     }
   } catch (err) {
