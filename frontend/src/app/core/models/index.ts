@@ -26,6 +26,13 @@ export interface Dependent {
   notes?: string;
 }
 
+export interface DoctorFee {
+  _id?: string;
+  code: string;
+  label: string;
+  price: number;
+}
+
 export interface DoctorProfile {
   _id: string;
   account: string | Account;
@@ -36,6 +43,7 @@ export interface DoctorProfile {
   location?: string;
   sector: 1 | 2 | 3;
   baseFee: number;
+  fees?: DoctorFee[];
   schedule?: {
     workDays: string[];
     startHour: string;

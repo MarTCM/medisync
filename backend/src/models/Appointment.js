@@ -29,7 +29,6 @@ const appointmentSchema = new mongoose.Schema({
   },
   reason: {
     type: String,
-    enum: ['consultation générale', 'suivi', 'urgence', 'autre', 'indisponibilité'],
     required: true
   },
   notes: { type: String },

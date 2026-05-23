@@ -2,7 +2,6 @@ const MedicalRecord = require('../models/MedicalRecord');
 const DoctorProfile = require('../models/DoctorProfile');
 const Appointment = require('../models/Appointment');
 const PatientProfile = require('../models/PatientProfile');
-const Invoice = require('../models/Invoice');
 const PDFDocument = require('pdfkit');
 const { logAudit } = require('../utils/auditLogger');
 
@@ -37,25 +36,8 @@ exports.addConsultation = async (req, res) => {
       });
     }
 
-    // Fix: status lowercase to match enum
     if (appointmentId) {
       await Appointment.findByIdAndUpdate(appointmentId, { status: 'terminé' });
-
-      try {
-        const existing = await Invoice.findOne({ appointment: appointmentId });
-        if (!existing) {
-          await Invoice.create({
-            appointment: appointmentId,
-            patient: patientId,
-            doctor: doctorProfile._id,
-            amount: doctorProfile.baseFee ?? 0,
-            nomenclature: `Consultation — Secteur ${doctorProfile.sector ?? 1}`,
-            status: 'en attente'
-          });
-        }
-      } catch (invoiceErr) {
-        console.error('Auto-invoice creation failed:', invoiceErr.message);
-      }
     }
 
     await logAudit('MODIFICATION_DOSSIER', req, patientId, `Consultation ajoutée par le Dr.`);

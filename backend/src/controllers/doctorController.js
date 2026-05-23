@@ -42,7 +42,7 @@ exports.getMe = async (req, res) => {
 // Mettre à jour le profil du médecin connecté
 exports.updateMe = async (req, res) => {
   try {
-    const allowed = ['firstName', 'lastName', 'specialties', 'languages', 'location', 'sector', 'baseFee', 'schedule'];
+    const allowed = ['firstName', 'lastName', 'specialties', 'languages', 'location', 'sector', 'baseFee', 'fees', 'schedule'];
     const updates = {};
     allowed.forEach(k => { if (req.body[k] !== undefined) updates[k] = req.body[k]; });
 

@@ -14,7 +14,7 @@ router.post('/',
   body('date').matches(/^\d{4}-\d{2}-\d{2}$/).withMessage('Date invalide (YYYY-MM-DD).'),
   body('time').matches(/^\d{2}:\d{2}$/).withMessage('Heure invalide (HH:mm).'),
   body('duration').isIn([15, 30, 60]).withMessage('Durée invalide (15, 30 ou 60 min).'),
-  body('reason').isIn(['consultation générale', 'suivi', 'urgence', 'autre']).withMessage('Motif invalide.'),
+  body('reason').notEmpty().withMessage('Motif requis.'),
   validate,
   appointmentController.createAppointment
 );

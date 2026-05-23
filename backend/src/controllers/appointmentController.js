@@ -122,7 +122,7 @@ exports.getAllAppointments = async (req, res) => {
 
     const appointments = await Appointment.find(filter)
       .populate('patient', 'firstName lastName dateOfBirth dependents')
-      .populate('doctor', 'firstName lastName specialties baseFee')
+      .populate('doctor', 'firstName lastName specialties baseFee fees sector')
       .sort({ startTime: 1 });
 
     res.status(200).json({

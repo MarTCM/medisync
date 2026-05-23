@@ -17,7 +17,7 @@ import { COMMA, ENTER } from '@angular/cdk/keycodes';
 import { Subscription } from 'rxjs';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { AuthService } from '../../../core/services/auth.service';
-import { DoctorProfile } from '../../../core/models';
+import { DoctorProfile, DoctorFee } from '../../../core/models';
 import { toLocalDateString } from '../../../core/utils/date';
 
 interface TimeSlot { time: string; available: boolean; }
@@ -46,8 +46,14 @@ interface TimeSlot { time: string; available: boolean; }
           <div style="font-size:13px;color:var(--text-muted);margin-top:2px">{{ doctor.specialties?.join(', ') }}</div>
         </div>
         <div style="margin-left:auto;text-align:right">
-          <div style="font-size:16px;font-weight:700;color:var(--primary)">{{ doctor.baseFee }} DH</div>
-          <div style="font-size:11px;color:var(--text-muted)">par consultation</div>
+          <ng-container *ngIf="selectedFee; else noFeeSelected">
+            <div style="font-size:16px;font-weight:700;color:var(--primary)">{{ selectedFee.price }} DH</div>
+            <div style="font-size:11px;color:var(--text-muted)">{{ selectedFee.label }}</div>
+          </ng-container>
+          <ng-template #noFeeSelected>
+            <div style="font-size:16px;font-weight:700;color:var(--primary)">{{ doctor.baseFee }} DH</div>
+            <div style="font-size:11px;color:var(--text-muted)">{{ doctor.fees?.length ? 'sélectionnez un acte' : 'par consultation' }}</div>
+          </ng-template>
         </div>
       </div>
 
@@ -200,13 +206,23 @@ interface TimeSlot { time: string; available: boolean; }
             </div>
           </div>
 
+          <!-- Consultation type: uses doctor's fees catalog when defined, fallback to generic options -->
           <mat-form-field class="full-width">
-            <mat-label>Motif de la consultation</mat-label>
-            <mat-select formControlName="reason">
-              <mat-option value="consultation générale">Consultation générale</mat-option>
-              <mat-option value="suivi">Suivi</mat-option>
-              <mat-option value="urgence">Urgence</mat-option>
-              <mat-option value="autre">Autre</mat-option>
+            <mat-label>Type de consultation</mat-label>
+            <mat-select formControlName="reason" (selectionChange)="onConsultationTypeChange($event.value)">
+              <ng-container *ngIf="doctor?.fees?.length; else genericReasons">
+                <mat-option *ngFor="let fee of doctor!.fees" [value]="fee.code + ' — ' + fee.label">
+                  <span style="font-weight:600;font-family:monospace;font-size:12px">{{ fee.code }}</span>
+                  &nbsp;— {{ fee.label }}
+                  <span style="float:right;font-weight:700;color:var(--primary);margin-left:16px">{{ fee.price }} DH</span>
+                </mat-option>
+              </ng-container>
+              <ng-template #genericReasons>
+                <mat-option value="consultation générale">Consultation générale</mat-option>
+                <mat-option value="suivi">Suivi</mat-option>
+                <mat-option value="urgence">Urgence</mat-option>
+                <mat-option value="autre">Autre</mat-option>
+              </ng-template>
             </mat-select>
           </mat-form-field>
 
@@ -270,6 +286,7 @@ export class BookAppointmentComponent implements OnInit, OnDestroy {
   form: FormGroup;
   thirdPartyForm: FormGroup;
   doctor?: DoctorProfile;
+  selectedFee: DoctorFee | null = null;
   dependents: any[] = [];
   loading = false;
   error = '';
@@ -315,6 +332,10 @@ export class BookAppointmentComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.doctor = history.state?.doctor;
     if (!this.doctor) { this.router.navigate(['/patient/search']); return; }
+
+    if (this.doctor.fees?.length) {
+      this.form.patchValue({ reason: '' }, { emitEvent: false });
+    }
 
     this.authSvc.getMe().subscribe({
       next: res => { this.dependents = res.profile?.dependents ?? []; }
@@ -425,6 +446,11 @@ export class BookAppointmentComponent implements OnInit, OnDestroy {
   selectSlot(time: string): void {
     this.selectedTime = time;
     this.form.patchValue({ time }, { emitEvent: false });
+  }
+
+  onConsultationTypeChange(value: string): void {
+    const fee = (this.doctor?.fees || []).find(f => f.code + ' — ' + f.label === value) ?? null;
+    this.selectedFee = fee;
   }
 
   goBack(): void { this.router.navigate(['/patient/search']); }

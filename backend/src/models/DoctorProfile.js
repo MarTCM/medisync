@@ -22,6 +22,11 @@ const doctorProfileSchema = new mongoose.Schema({
     default: 1 
   },
   baseFee: { type: Number, required: true }, // Tarif de base de la consultation
+  fees: [{
+    code:  { type: String, required: true },
+    label: { type: String, required: true },
+    price: { type: Number, required: true }
+  }],
 
   // Gestion du Planning (Disponibilités par défaut)
   schedule: {

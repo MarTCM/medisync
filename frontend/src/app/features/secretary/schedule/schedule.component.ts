@@ -239,9 +239,10 @@ export class SecretaryScheduleComponent implements OnInit, OnDestroy {
       return;
     }
     const baseFee = typeof apt.doctor === 'object' ? Number((apt.doctor as any).baseFee) || 0 : 0;
+    const fees = typeof apt.doctor === 'object' ? ((apt.doctor as any).fees || []) : [];
     const ref = this.dialog.open(FacturerDialogComponent, {
-      width: '460px',
-      data: { appointment: apt, baseFee }
+      width: '500px',
+      data: { appointment: apt, baseFee, fees }
     });
     ref.afterClosed().subscribe((result: FacturerDialogResult | undefined) => {
       if (!result) return;
