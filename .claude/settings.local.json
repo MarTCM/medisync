@@ -61,7 +61,8 @@
       "Bash(node --check src/controllers/invoiceController.js)",
       "Bash(grep -E \"\\\\.\\(ts|html|css|scss\\)$\")",
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({'dependencies': d.get\\('dependencies',{}\\), 'devDependencies': d.get\\('devDependencies',{}\\)}, indent=2\\)\\)\")",
-      "Bash(pdflatex --version)"
+      "Bash(pdflatex --version)",
+      "Bash(grep -E \"\\\\.\\(ts|model|service\\)\\\\.ts$\")"
     ]
   }
 }
