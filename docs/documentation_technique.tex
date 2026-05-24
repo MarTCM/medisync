@@ -1044,15 +1044,32 @@ Après \texttt{node seed.js}, les comptes suivants sont disponibles (mot de pass
 
 \begin{center}
 \small
-\begin{tabular}{@{} l l l @{}}
+\begin{tabular}{@{} l l l l @{}}
   \toprule
-  \textbf{Rôle} & \textbf{E-mail} & \textbf{Mot de passe} \\
+  \textbf{Rôle} & \textbf{E-mail} & \textbf{Nom} & \textbf{Mot de passe} \\
   \midrule
-  Administrateur & \texttt{admin@medisync.demo}     & \texttt{Demo1234!} \\
-  Médecin        & \texttt{doctor@medisync.demo}    & \texttt{Demo1234!} \\
-  Secrétaire     & \texttt{secretary@medisync.demo} & \texttt{Demo1234!} \\
-  Patient 1      & \texttt{patient@medisync.demo}   & \texttt{Demo1234!} \\
-  Patient 2      & \texttt{patient2@medisync.demo}  & \texttt{Demo1234!} \\
+  Administrateur & \texttt{admin@medisync.demo}              & Ali Benali          & \texttt{Demo1234!} \\
+  Secrétaire     & \texttt{secretary@medisync.demo}          & Nadia Ouhbi         & \texttt{Demo1234!} \\
+  \midrule
+  Médecin 1      & \texttt{doctor@medisync.demo}             & Fatima Cherif       & \texttt{Demo1234!} \\
+                 & \multicolumn{3}{l}{\footnotesize\textit{Cardiologie, Médecine générale — secteur 2}} \\[2pt]
+  Médecin 2      & \texttt{doctor2@medisync.demo}            & Karim Amrani        & \texttt{Demo1234!} \\
+                 & \multicolumn{3}{l}{\footnotesize\textit{Orthopédie, Traumatologie — secteur 2}} \\[2pt]
+  Médecin 3      & \texttt{doctor3@medisync.demo}            & Leila Mansouri      & \texttt{Demo1234!} \\
+                 & \multicolumn{3}{l}{\footnotesize\textit{Pédiatrie — secteur 1}} \\[2pt]
+  Médecin 4      & \texttt{doctor4@medisync.demo}            & Omar Bensouda       & \texttt{Demo1234!} \\
+                 & \multicolumn{3}{l}{\footnotesize\textit{Radiologie, Imagerie médicale — secteur 2}} \\[2pt]
+  Médecin 5      & \texttt{doctor5@medisync.demo}            & Amina Hajji         & \texttt{Demo1234!} \\
+                 & \multicolumn{3}{l}{\footnotesize\textit{Dermatologie, Vénérologie — secteur 2}} \\[2pt]
+  \midrule
+  Patient 1      & \texttt{marwane.elbaraka@gmail.com}       & Youssef Tazi        & \texttt{Demo1234!} \\
+                 & \multicolumn{3}{l}{\footnotesize\textit{2 enfants : Nour, Hind}} \\[2pt]
+  Patient 2      & \texttt{patient2@medisync.demo}           & Salma Idrissi       & \texttt{Demo1234!} \\
+  Patient 3      & \texttt{patient3@medisync.demo}           & Hassan El Fassi     & \texttt{Demo1234!} \\
+                 & \multicolumn{3}{l}{\footnotesize\textit{Conjoint : Khadija}} \\[2pt]
+  Patient 4      & \texttt{patient4@medisync.demo}           & Zineb Moussaoui     & \texttt{Demo1234!} \\
+  Patient 5      & \texttt{patient5@medisync.demo}           & Rachid Benkirane    & \texttt{Demo1234!} \\
+                 & \multicolumn{3}{l}{\footnotesize\textit{Conjoint + 2 enfants : Amine, Rim}} \\
   \bottomrule
 \end{tabular}
 \end{center}
@@ -1094,7 +1111,16 @@ ng build --configuration=production
 \section{Portail Secrétaire}
 
 \begin{itemize}[leftmargin=*,itemsep=3pt]
-  \item \textbf{Planning global} : Vue hebdomadaire de tous les RDV. Actions : confirmation, no-show, rescheduling.
+  \item \textbf{Planning global} : Vue tabulaire de l'ensemble des rendez-vous organisée par statut.
+    Six onglets correspondent aux six états possibles d'un rendez-vous
+    (\textit{en attente}, \textit{confirmé}, \textit{terminé}, \textit{annulé}, \textit{no-show},
+    \textit{indisponible}). Dans chaque onglet, tous les rendez-vous du statut concerné sont
+    affichés d'un seul tenant, quelle que soit leur date, et regroupés sous des en-têtes de date
+    (ex. : \textit{Aujourd'hui}, \textit{Demain}, puis dates au format long en français) triés
+    chronologiquement. Des badges de comptage sur les onglets \textit{en attente} et
+    \textit{confirmé} signalent immédiatement les éléments nécessitant une action.
+    Actions disponibles : confirmation, marquage no-show, report (rescheduling), annulation,
+    émission de facture (onglet \textit{terminé}).
   \item \textbf{Patients} : Recherche, consultation et création de nouveaux dossiers.
   \item \textbf{Facturation} : Émission de factures pour les consultations terminées, suivi des impayés (> 30 j), envoi par e-mail, marquage de paiement.
 \end{itemize}
