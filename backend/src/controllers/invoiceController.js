@@ -1,3 +1,12 @@
+/**
+ * Contrôleur invoice — facturation, génération PDF et règlements.
+ *
+ * - createInvoice : crée une facture liée à un rendez-vous (une seule par RDV, contrainte vérifiée).
+ * - listByPatient / listAll / listOverdue : listings filtrés selon le rôle et l'état d'encaissement.
+ * - generateInvoicePDF / generateFeuilleSoinsPDF : produit les PDF téléchargeables via PDFKit.
+ * - sendInvoiceEmail : envoie la facture au patient avec le PDF en pièce jointe (template invoiceEmailTemplate).
+ * - markPaid : marque la facture comme réglée et stocke la date de paiement.
+ */
 const PDFDocument = require('pdfkit');
 const Invoice = require('../models/Invoice');
 const PatientProfile = require('../models/PatientProfile');

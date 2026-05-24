@@ -1,3 +1,9 @@
+/**
+ * Coquille (shell) du portail administrateur.
+ *
+ * - Layout parent des routes /admin/* (barre latérale + zone de contenu router-outlet).
+ * - Affiche les liens vers dashboard, staff, facility, analytics, audit, 2fa.
+ */
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';

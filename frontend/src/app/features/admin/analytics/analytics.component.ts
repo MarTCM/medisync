@@ -1,3 +1,10 @@
+/**
+ * Composant AdminAnalyticsComponent — tableau de bord analytique.
+ *
+ * - Affiche les KPIs et la ventilation du chiffre d'affaires (graphes Chart.js).
+ * - Filtres de période (granularité jour/semaine/mois/année, plage from/to).
+ * - Boutons d'export PDF / Excel via AnalyticsService.exportPdf / exportExcel.
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

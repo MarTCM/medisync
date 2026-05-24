@@ -1,3 +1,12 @@
+/**
+ * Contrôleur record — dossier médical, consultations et documents joints.
+ *
+ * - addConsultation (médecin) : ajoute une consultation au dossier et bascule le RDV en statut 'terminé'.
+ * - getMyRecord / updateMyRecord (patient) : lecture et modification des antécédents et allergies.
+ * - getPatientRecord (médecin/secrétaire/admin) : accès au dossier d'un patient — action tracée par logAudit (ACCES_DOSSIER).
+ * - uploadDocument(ForPatient) : téléversement de pièces jointes via multer (PDF/JPG/PNG/DICOM, 20 Mo max).
+ * - generatePrescriptionPDF : génère le PDF d'une ordonnance pour téléchargement par le patient.
+ */
 const MedicalRecord = require('../models/MedicalRecord');
 const DoctorProfile = require('../models/DoctorProfile');
 const Appointment = require('../models/Appointment');

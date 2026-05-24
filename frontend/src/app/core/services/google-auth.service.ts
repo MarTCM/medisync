@@ -1,3 +1,10 @@
+/**
+ * Service GoogleAuthService — intégration côté frontend du Sign-In Google.
+ *
+ * - renderButton : affiche le bouton officiel Google dans un conteneur DOM et déclenche un callback avec l'idToken.
+ * - waitForGoogle : attend que le SDK Google (chargé via script externe) soit prêt avant l'initialisation.
+ * - L'idToken obtenu est ensuite envoyé à /api/auth/google (AuthService.googleLogin) pour récupérer le JWT MediSync.
+ */
 import { Injectable, NgZone } from '@angular/core';
 import { environment } from '../../../environments/environment';
 

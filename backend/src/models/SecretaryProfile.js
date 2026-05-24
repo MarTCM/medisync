@@ -1,3 +1,10 @@
+/**
+ * Modèle SecretaryProfile — fiche d'une secrétaire de la clinique.
+ *
+ * - Liée à un Account (relation 1-1, contrainte unique) qui porte les identifiants et le rôle 'secretaire'.
+ * - Stocke uniquement l'état civil — les permissions sont contrôlées par le RBAC via Account.role.
+ * - Création réservée à l'administrateur via /api/admin/staff.
+ */
 const mongoose = require('mongoose');
 
 const secretaryProfileSchema = new mongoose.Schema({

@@ -1,3 +1,11 @@
+/**
+ * Composant MyRecordComponent — dossier médical du patient.
+ *
+ * - Affiche antécédents, allergies, historique des consultations et documents joints.
+ * - Permet au patient de mettre à jour ses antécédents/allergies (RecordService.updateMyRecord).
+ * - Téléchargement des ordonnances en PDF via RecordService.
+ * - Téléversement de documents (PDF/JPG/PNG/DICOM, 20 Mo max) via uploadDocument.
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';

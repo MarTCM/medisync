@@ -1,3 +1,11 @@
+/**
+ * Connexion à la base de données MongoDB via Mongoose.
+ *
+ * - Lit l'URI MongoDB depuis la variable d'environnement MONGO_URI (.env).
+ * - Affiche l'hôte connecté ou l'erreur de connexion.
+ * - En cas d'échec, arrête entièrement le processus serveur (process.exit(1))
+ *   car l'application ne peut pas fonctionner sans la base de données.
+ */
 const mongoose = require('mongoose');
 
 const connectDB = async () => {

@@ -1,3 +1,9 @@
+/**
+ * Composant CompleteProfileComponent — complément d'inscription pour patients OAuth Google.
+ *
+ * - Vue forcée par authGuard quand profileCompleted=false (numéro de sécurité sociale manquant après Google Sign-In).
+ * - Soumet le formulaire à AuthService.completeProfile puis redirige vers /patient/dashboard.
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';

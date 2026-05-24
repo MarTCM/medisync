@@ -1,3 +1,9 @@
+/**
+ * Coquille (shell) du portail médecin.
+ *
+ * - Layout parent des routes /doctor/* (barre latérale + zone de contenu router-outlet).
+ * - Liens vers calendar, availability, leaves, profile.
+ */
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';

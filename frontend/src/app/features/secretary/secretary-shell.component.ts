@@ -1,3 +1,9 @@
+/**
+ * Coquille (shell) du portail secrétaire.
+ *
+ * - Layout parent des routes /secretary/* (barre latérale + zone de contenu router-outlet).
+ * - Liens vers schedule (planning), patients, invoices.
+ */
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';

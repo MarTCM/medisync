@@ -1,3 +1,11 @@
+/**
+ * Modèle Facility — configuration globale de la clinique (singleton).
+ *
+ * - Un seul document doit exister en base : informations générales de l'établissement.
+ * - Gère les coordonnées, horaires d'ouverture et liste des spécialités proposées.
+ * - Décrit les salles physiques et leur équipement (référencées par Appointment.room).
+ * - CRUD réservé à l'administrateur via /api/facility.
+ */
 const mongoose = require('mongoose');
 
 const facilitySchema = new mongoose.Schema({

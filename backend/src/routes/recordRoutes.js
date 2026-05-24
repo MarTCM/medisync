@@ -1,3 +1,12 @@
+/**
+ * Routes /api/records — dossier médical et documents joints.
+ *
+ * - POST / : le médecin ajoute une consultation (compte rendu + prescriptions).
+ * - /my-record (patient) : consulter et mettre à jour ses antécédents/allergies.
+ * - /upload[/...] : téléversement de documents (multer, formats PDF/JPG/PNG/DICOM, 20 Mo max).
+ * - GET /patient/:patientId : accès au dossier d'un patient pour médecin/secrétaire/admin (action journalisée par auditLogger).
+ * - PDF d'ordonnance disponible via /my-record/consultations/:id/prescription/pdf.
+ */
 const express = require('express');
 const router = express.Router();
 const recordController = require('../controllers/recordController');

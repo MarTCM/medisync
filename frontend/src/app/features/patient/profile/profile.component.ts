@@ -1,3 +1,10 @@
+/**
+ * Composant PatientProfileComponent — édition du profil patient.
+ *
+ * - Modification des informations personnelles (nom, téléphone, date de naissance).
+ * - Gestion des ayants droit (ajout/suppression : enfant, conjoint, parent).
+ * - Persistance via AuthService.updatePatientProfile.
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';

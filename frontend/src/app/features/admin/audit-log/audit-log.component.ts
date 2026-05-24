@@ -1,3 +1,9 @@
+/**
+ * Composant AuditLogComponent — consultation du journal d'audit (administrateur).
+ *
+ * - Liste paginée des actions sensibles (CONNEXION, ACCES_DOSSIER, etc.) via AdminService.listAudit(page, limit).
+ * - Réponse à déballer : { logs, pagination: { total, ... } }.
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';

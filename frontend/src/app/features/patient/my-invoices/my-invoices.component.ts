@@ -1,3 +1,9 @@
+/**
+ * Composant MyInvoicesComponent — factures du patient connecté.
+ *
+ * - Liste les factures (InvoiceService.getMine) avec statut (payé / en attente / impayé).
+ * - Téléchargement du PDF de la facture pour archivage personnel.
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatButtonModule } from '@angular/material/button';

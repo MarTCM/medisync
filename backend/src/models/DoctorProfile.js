@@ -1,3 +1,12 @@
+/**
+ * Modèle DoctorProfile — fiche professionnelle d'un médecin.
+ *
+ * - Liée à un Account (relation 1-1) qui porte les identifiants et le rôle.
+ * - Stocke spécialités, langues parlées, secteur tarifaire (1/2/3) et grille d'honoraires.
+ * - Décrit les disponibilités par défaut (jours travaillés, plage horaire, durée standard).
+ * - Conserve les congés / absences exceptionnelles utilisés par le scheduler pour bloquer les créneaux.
+ * - Sert de cible aux recherches patient (par spécialité, langue, etc.).
+ */
 const mongoose = require('mongoose');
 
 const doctorProfileSchema = new mongoose.Schema({

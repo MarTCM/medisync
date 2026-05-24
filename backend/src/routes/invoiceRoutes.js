@@ -1,3 +1,11 @@
+/**
+ * Routes /api/invoices — facturation et règlements.
+ *
+ * - Création par secrétaire/admin avec validation (rendez-vous, patient, médecin, montant, nomenclature).
+ * - Consultation : /mine pour le patient, listing complet pour secrétaire/admin, /overdue pour les impayés.
+ * - Génération PDF (PDFKit) : facture et feuille de soins ; envoi par email au patient (Resend).
+ * - PATCH /:id/pay marque une facture comme réglée.
+ */
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');

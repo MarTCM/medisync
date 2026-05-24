@@ -1,3 +1,11 @@
+/**
+ * Service InvoiceService — facturation et règlements côté frontend.
+ *
+ * - create : crée une facture liée à un RDV (secrétaire/admin).
+ * - getMine / getAll / getOverdue : listings selon le rôle, réponses à déballer (.invoices).
+ * - downloadPdf : téléchargement du PDF en blob (utilisé par mes-factures et l'écran secrétaire).
+ * - markPaid : marque une facture comme réglée.
+ */
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';

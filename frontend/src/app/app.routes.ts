@@ -1,3 +1,12 @@
+/**
+ * Définition centralisée des routes Angular (lazy loading).
+ *
+ * - Routes publiques : /login, /register, /2fa, /complete-profile.
+ * - Quatre portails protégés par rôle, chacun chargé en lazy via un shell parent :
+ *   /patient, /doctor (médecin), /secretary (secrétaire), /admin.
+ * - Sécurité : authGuard (JWT présent + profil patient complété) puis roleGuard (compare au rôle requis dans data.roles).
+ * - Wildcard ** redirige vers /login pour toute route inconnue.
+ */
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { roleGuard } from './core/guards/role.guard';

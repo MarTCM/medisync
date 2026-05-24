@@ -1,3 +1,13 @@
+/**
+ * server.js — Point d'entrée de l'API Express MediSync.
+ *
+ * - Initialise Express, CORS (autorise l'URL frontend du .env), parser JSON et journalisation Morgan.
+ * - Connecte MongoDB via config/db et lance le planificateur de rappels horaire (utils/reminderScheduler).
+ * - Monte tous les routeurs métiers sous /api/* (admin, auth, appointments, records, doctors, reviews, invoices, facility, analytics).
+ * - Sert les fichiers téléversés depuis /uploads (créé automatiquement si absent).
+ * - Expose un endpoint de santé /health et des handlers globaux 404 / 500.
+ * - Vérifie au démarrage que le transport email Resend est configuré (RESEND_API_KEY).
+ */
 require('dns').setDefaultResultOrder('ipv4first');
 require('dotenv').config();
 const express = require('express');

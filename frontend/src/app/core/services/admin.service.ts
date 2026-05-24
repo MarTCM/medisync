@@ -1,3 +1,11 @@
+/**
+ * Service AdminService — opérations d'administration (CRUD personnel + audit).
+ *
+ * - createStaff / updateStaff / deleteAccount : gestion des comptes médecin et secrétaire.
+ * - listStaff / listPatients : annuaires consommés par les vues admin et secrétaire.
+ * - listAudit : journal d'audit paginé (écran admin/audit-log).
+ * - Toutes les méthodes ciblent /api/admin et nécessitent un rôle 'administrateur' côté backend.
+ */
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';

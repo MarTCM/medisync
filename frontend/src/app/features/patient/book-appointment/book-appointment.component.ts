@@ -1,3 +1,11 @@
+/**
+ * Composant BookAppointmentComponent — prise de rendez-vous par un patient.
+ *
+ * - Affichage deux colonnes : sélection du médecin/date à gauche, créneaux disponibles à droite.
+ * - Appelle AppointmentService.getAvailableSlots pour afficher les créneaux libres.
+ * - Soumission via AppointmentService.create (motif, durée, ayant droit éventuel).
+ * - Désabonnements gérés dans ngOnDestroy.
+ */
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';

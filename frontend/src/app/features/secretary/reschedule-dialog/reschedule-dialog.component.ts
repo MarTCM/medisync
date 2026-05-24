@@ -1,3 +1,9 @@
+/**
+ * Composant RescheduleDialogComponent — dialogue de reprogrammation d'un RDV (secrétaire).
+ *
+ * - Sélection d'une nouvelle date/heure parmi les créneaux disponibles du médecin.
+ * - Délègue à AppointmentService.reschedule ; déclenche l'envoi d'un email de notification au patient.
+ */
 import { Component, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';

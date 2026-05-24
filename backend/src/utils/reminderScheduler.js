@@ -1,3 +1,11 @@
+/**
+ * Planificateur de rappels par email (node-cron).
+ *
+ * - Tâche cron horaire ('0 * * * *') qui scanne les rendez-vous confirmés à venir.
+ * - Envoie un rappel 24h avant et un rappel 1h avant (fenêtre de ±30 min autour de la cible).
+ * - Filtre uniquement les statuts 'confirmé' et ignore les rendez-vous sans email patient.
+ * - Importé pour ses effets de bord depuis server.js — démarre dès le boot du backend.
+ */
 const cron = require('node-cron');
 const Appointment = require('../models/Appointment');
 const { sendNotification } = require('./emailService');

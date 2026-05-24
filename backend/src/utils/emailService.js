@@ -1,3 +1,11 @@
+/**
+ * Service email — envoi de notifications via Resend.
+ *
+ * - sendNotification(to, subject, text, attachment?, html?) envoie un email (avec PJ facultative).
+ * - getFacilityInfo() lit (et met en cache) les coordonnées de la clinique pour personnaliser les emails.
+ * - verifyTransporter() est appelé au démarrage du serveur pour signaler une clé RESEND_API_KEY manquante.
+ * - Les erreurs d'envoi sont loguées mais ne bloquent jamais la requête HTTP appelante.
+ */
 const { Resend } = require('resend');
 const Facility = require('../models/Facility');
 

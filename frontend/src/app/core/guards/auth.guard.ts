@@ -1,3 +1,11 @@
+/**
+ * Guard authGuard — vérifie qu'un JWT est présent avant d'autoriser l'accès.
+ *
+ * - Redirige vers /login si aucun token n'est stocké (TokenStorage.get()).
+ * - Cas particulier patient via Google OAuth : si profileCompleted=false,
+ *   force la redirection vers /complete-profile (sauf si déjà sur cette route).
+ * - Appliqué à toutes les routes des portails via canActivate.
+ */
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
 import { TokenStorage } from '../utils/token-storage';

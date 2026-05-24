@@ -1,3 +1,9 @@
+/**
+ * Composant BookForPatientDialogComponent — dialogue de prise de RDV au nom d'un patient (secrétaire).
+ *
+ * - Choix du médecin, de la date, du créneau et du motif.
+ * - Délègue à AppointmentService.create avec patientId explicite (l'authController distingue ce cas).
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';

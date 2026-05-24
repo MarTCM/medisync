@@ -1,3 +1,10 @@
+/**
+ * Composant RegisterComponent — inscription d'un nouveau patient.
+ *
+ * - Formulaire de création de compte (email, mot de passe fort, numéro de sécurité sociale, état civil).
+ * - Bouton Google Sign-Up alternatif (les patients OAuth devront compléter leur profil après).
+ * - Délègue à AuthService.register puis redirige vers /patient/dashboard en cas de succès.
+ */
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';

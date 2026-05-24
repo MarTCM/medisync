@@ -1,3 +1,10 @@
+/**
+ * Contrôleur doctor — recherche de médecins et gestion du profil professionnel.
+ *
+ * - searchDoctors : recherche par spécialité, langue, lieu ou nom (regex insensible à la casse).
+ * - getMe / updateMe : le médecin connecté consulte et met à jour son DoctorProfile.
+ * - addLeave / listLeaves / removeLeave : gestion des congés et absences (impactent les créneaux disponibles).
+ */
 const DoctorProfile = require('../models/DoctorProfile');
 
 // Recherche de médecins par critères

@@ -1,3 +1,10 @@
+/**
+ * Intercepteur HTTP de gestion globale des erreurs.
+ *
+ * - En cas de réponse 401 (token expiré ou invalide), purge la session locale et redirige vers /login.
+ * - Relaie toutes les autres erreurs au composant appelant via throwError.
+ * - Branché après authInterceptor dans app.config.ts.
+ */
 import { HttpInterceptorFn } from '@angular/common/http';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';

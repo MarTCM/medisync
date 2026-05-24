@@ -1,3 +1,12 @@
+/**
+ * Modèle Appointment — créneau de consultation (ou blocage de planning).
+ *
+ * - Référence un médecin obligatoirement et un patient (facultatif pour les blocs 'indisponible').
+ * - Supporte les rendez-vous pour un ayant droit (dependentId) du patient principal.
+ * - Statut suit le cycle de vie : en attente → confirmé → terminé / annulé / no-show.
+ * - Durée standardisée à 15, 30 ou 60 minutes ; salle liée à Facility.rooms[].roomName.
+ * - Index composés pour les requêtes par médecin/date et par patient/date.
+ */
 const mongoose = require('mongoose');
 
 const appointmentSchema = new mongoose.Schema({

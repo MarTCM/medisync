@@ -1,3 +1,10 @@
+/**
+ * Routes /api/doctors — recherche de médecins et gestion du profil médecin.
+ *
+ * - GET /search est ouvert à tous les rôles authentifiés (filtrage par spécialité, langue, etc.).
+ * - GET/PATCH /me permettent au médecin connecté de consulter et modifier son profil professionnel.
+ * - /me/leaves : ajout, listing et suppression des congés/absences (impactent les créneaux disponibles).
+ */
 const express = require('express');
 const router = express.Router();
 const doctorController = require('../controllers/doctorController');

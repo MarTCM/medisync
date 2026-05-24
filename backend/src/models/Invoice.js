@@ -1,3 +1,12 @@
+/**
+ * Modèle Invoice — facture associée à un rendez-vous réalisé.
+ *
+ * - Lie un Appointment, un PatientProfile et un DoctorProfile.
+ * - Montant calculé à partir de la grille d'honoraires du médecin et de la nomenclature CCAM saisie.
+ * - Statut suit l'encaissement : en attente → payé, ou bascule à impayé après échéance.
+ * - Sert de source au générateur PDF (utils/pdfGenerator) pour les factures téléchargeables.
+ * - Index sur (patient, status) pour récupérer rapidement les impayés d'un patient.
+ */
 const mongoose = require('mongoose');
 
 const invoiceSchema = new mongoose.Schema({

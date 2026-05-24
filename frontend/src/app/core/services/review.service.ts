@@ -1,3 +1,9 @@
+/**
+ * Service ReviewService — dépôt d'avis patients après consultation.
+ *
+ * - create : envoi d'une note + commentaire (et signalement d'insatisfaction le cas échéant).
+ * - Seuls les patients peuvent appeler ce service ; un seul avis par RDV (contrôlé côté backend).
+ */
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';

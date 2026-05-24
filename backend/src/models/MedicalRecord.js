@@ -1,3 +1,12 @@
+/**
+ * Modèle MedicalRecord — dossier médical centralisé d'un patient.
+ *
+ * - Un seul dossier par patient (champ patient marqué unique).
+ * - Regroupe antécédents, allergies, historique des consultations et prescriptions.
+ * - Chaque consultation référence l'Appointment et le DoctorProfile à l'origine du compte rendu.
+ * - Stocke les pièces jointes (analyses, imagerie) sous forme de chemins de fichiers (multer s'occupe de la limite 20 Mo).
+ * - Formats autorisés : PDF, JPG, PNG, DICOM (contrainte du cahier des charges).
+ */
 const mongoose = require('mongoose');
 
 const medicalRecordSchema = new mongoose.Schema({

@@ -1,3 +1,10 @@
+/**
+ * Composant SecretaryScheduleComponent — planning global de la clinique (secrétaire).
+ *
+ * - Vue à onglets (jour / semaine) et regroupement des rendez-vous par médecin.
+ * - Actions sur chaque RDV : confirmer, reprogrammer (RescheduleDialogComponent), marquer no-show.
+ * - Données via AppointmentService.getAll(date) — déballer la réponse { appointments }.
+ */
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';

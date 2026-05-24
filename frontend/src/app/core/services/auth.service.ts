@@ -1,3 +1,12 @@
+/**
+ * Service AuthService — façade des opérations d'authentification côté frontend.
+ *
+ * - login / register / googleLogin : appelle /api/auth/* et persiste session (token + compte) via TokenStorage.
+ * - Expose currentUser$ (BehaviorSubject) pour que les composants réagissent au changement de session.
+ * - hasRole(...roles) : utilisé par roleGuard et certaines vues pour adapter l'UI au rôle.
+ * - 2FA : verify2FA, setup2FA, confirmSetup2FA, disable2FA — flow TOTP côté admin.
+ * - logout() purge le localStorage et redirige vers /login.
+ */
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { BehaviorSubject, Observable, tap } from 'rxjs';

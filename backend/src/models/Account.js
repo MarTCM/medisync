@@ -1,3 +1,12 @@
+/**
+ * Modèle Account — identifiants et rôle d'un utilisateur de la plateforme.
+ *
+ * - Stocke email/mot de passe (haché via bcrypt en pre-save) ou identifiant Google OAuth.
+ * - Définit le rôle parmi : patient, medecin, secretaire, administrateur (utilisé par le RBAC).
+ * - Peut héberger un secret TOTP pour l'authentification à deux facteurs (speakeasy).
+ * - Le drapeau profileCompleted distingue les comptes Google nécessitant un complément d'inscription.
+ * - Le mot de passe doit respecter une politique forte (8+ caractères, maj/chiffre/spécial).
+ */
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 

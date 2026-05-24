@@ -1,3 +1,12 @@
+/**
+ * Contrôleur admin — gestion du personnel et du journal d'audit.
+ *
+ * - createStaffAccount : crée un compte + profil pour un médecin ou une secrétaire (réservé à l'administrateur).
+ * - listStaff, updateStaffAccount, deleteAccount : CRUD sur les comptes du personnel.
+ * - listPatients : liste paginée des patients (accessible à la secrétaire et à l'administrateur).
+ * - listAudit : retourne le journal d'audit paginé (utilisé par l'écran admin/audit-log).
+ * - Toutes les actions sensibles sont tracées via logAudit (utils/auditLogger).
+ */
 const Account = require('../models/Account');
 const DoctorProfile = require('../models/DoctorProfile');
 const SecretaryProfile = require('../models/SecretaryProfile');

@@ -1,3 +1,10 @@
+/**
+ * Modèles TypeScript partagés — miroir des schémas Mongoose du backend.
+ *
+ * - Account, PatientProfile, DoctorProfile, Appointment, Invoice, MedicalRecord, Facility, Review, AuditLog…
+ * - Utilisés comme types de retour par les services HTTP (core/services/*).
+ * - Importés via `import { … } from 'src/app/core/models'` (point d'entrée unique).
+ */
 export interface Account {
   id: string;
   email?: string;

@@ -1,3 +1,10 @@
+/**
+ * Contrôleur facility — configuration de la clinique (modèle singleton).
+ *
+ * - getFacility : lecture des informations de la clinique (ouvert à tous les rôles authentifiés).
+ * - upsertFacility : crée ou met à jour le document unique (upsert) — réservé à l'administrateur.
+ * - addRoom / removeRoom : gestion des salles d'examen (équipements rattachés à chaque salle).
+ */
 const Facility = require('../models/Facility');
 
 // Récupérer la configuration de la clinique (singleton)

@@ -1,3 +1,10 @@
+/**
+ * Composant LoginComponent — page de connexion.
+ *
+ * - Formulaire email/mot de passe + bouton Google Sign-In (GoogleAuthService).
+ * - Appelle AuthService.login puis redirige vers le portail correspondant au rôle.
+ * - Gère le flow 2FA : si la réponse contient un tempToken, redirige vers /2fa.
+ */
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';

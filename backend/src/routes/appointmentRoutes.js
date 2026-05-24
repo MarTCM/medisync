@@ -1,3 +1,11 @@
+/**
+ * Routes /api/appointments — cycle de vie des rendez-vous.
+ *
+ * - Création par patient/secrétaire/admin (validation de date, heure, durée et motif).
+ * - Consultation : planning global (secrétaire/admin), historique patient, planning quotidien médecin.
+ * - GET /available-slots calcule les créneaux libres d'un médecin à partir de ses disponibilités et congés.
+ * - Actions de gestion : annuler, reprogrammer, confirmer, marquer no-show, bloquer un créneau (indisponibilité médecin).
+ */
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');

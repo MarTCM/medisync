@@ -1,3 +1,9 @@
+/**
+ * Composant SecretaryPatientsComponent — annuaire des patients (secrétaire).
+ *
+ * - Liste paginée des patients (AdminService.listPatients).
+ * - Permet de créer une fiche patient minimale et d'ouvrir BookForPatientDialogComponent pour réserver un RDV.
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';

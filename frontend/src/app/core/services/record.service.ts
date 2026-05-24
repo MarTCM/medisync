@@ -1,3 +1,11 @@
+/**
+ * Service RecordService — dossier médical et documents joints.
+ *
+ * - getMyRecord / updateMyRecord : pour le patient (antécédents, allergies).
+ * - addConsultation : pour le médecin (compte rendu + prescriptions).
+ * - uploadDocument(ForPatient) : envoi multipart/form-data du document (multer côté backend, 20 Mo max).
+ * - getPatientRecord : lecture du dossier par médecin/secrétaire/admin (journalisée).
+ */
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';

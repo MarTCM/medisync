@@ -1,3 +1,11 @@
+/**
+ * Modèle AuditLog — journal d'audit des actions sensibles.
+ *
+ * - Trace qui (userAccount) a fait quoi (action) sur quelle cible (targetId).
+ * - Actions normalisées : CONNEXION, ACCES_DOSSIER, MODIFICATION_DOSSIER, CREATION_COMPTE, EXPORT_DONNEES.
+ * - Conserve l'adresse IP et un détail libre pour la traçabilité réglementaire.
+ * - Consulté uniquement par l'administrateur via /api/admin/audit (avec pagination).
+ */
 const mongoose = require('mongoose');
 
 const auditLogSchema = new mongoose.Schema({

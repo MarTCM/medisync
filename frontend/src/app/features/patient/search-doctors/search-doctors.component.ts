@@ -1,3 +1,9 @@
+/**
+ * Composant SearchDoctorsComponent — recherche de médecins (patient).
+ *
+ * - Filtres par spécialité, langue, lieu, nom — délégués à DoctorService.search.
+ * - Affichage en cartes avec bouton "Prendre rendez-vous" qui pointe vers /patient/book.
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule } from '@angular/forms';

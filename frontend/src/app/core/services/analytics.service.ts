@@ -1,3 +1,10 @@
+/**
+ * Service AnalyticsService — KPIs et exports pour le tableau de bord administrateur.
+ *
+ * - getKpis / getRevenue : indicateurs agrégés (consommés par Chart.js dans /admin/analytics).
+ * - exportPdf / exportExcel : téléchargent les rapports (responseType blob) avec filtres de période.
+ * - Helper toParams sérialise granularity/from/to en HttpParams.
+ */
 import { Injectable } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';

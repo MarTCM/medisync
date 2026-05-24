@@ -1,3 +1,9 @@
+/**
+ * Composant SecretaryInvoicesComponent — gestion des factures (secrétaire).
+ *
+ * - Listing complet + onglet impayés (InvoiceService.getAll / getOverdue).
+ * - Création de facture via FacturerDialogComponent, marquage payé, téléchargement PDF, envoi par email.
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule } from '@angular/forms';

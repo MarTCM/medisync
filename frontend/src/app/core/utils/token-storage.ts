@@ -1,3 +1,10 @@
+/**
+ * TokenStorage — persistance du JWT et du profil connecté dans localStorage.
+ *
+ * - save/get/remove : gère le jeton sous la clé 'medisync_token'.
+ * - saveUser/getUser : sérialise/désérialise le compte courant sous la clé 'medisync_user'.
+ * - Utilisé par AuthService, authGuard et authInterceptor (source unique de vérité côté navigateur).
+ */
 const TOKEN_KEY = 'medisync_token';
 const USER_KEY = 'medisync_user';
 

@@ -1,3 +1,9 @@
+/**
+ * Composant FacturerDialogComponent — dialogue de création de facture pour un RDV terminé.
+ *
+ * - Pré-remplit montant et nomenclature à partir de la grille d'honoraires du médecin.
+ * - Délègue à InvoiceService.create ; reçoit appointment + médecin + patient via MAT_DIALOG_DATA.
+ */
 import { Component, Inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';

@@ -1,3 +1,9 @@
+/**
+ * Composant AdminDashboardComponent — tableau de bord administrateur.
+ *
+ * - Cartes KPI (rendez-vous du jour, factures en attente, taux d'occupation, etc.) via AnalyticsService.
+ * - Navigation rapide vers les écrans d'administration (staff, facility, analytics, audit, 2fa).
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';

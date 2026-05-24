@@ -1,3 +1,9 @@
+/**
+ * Composant LeaveReviewComponent — formulaire d'avis après consultation.
+ *
+ * - Note de 1 à 5 étoiles + commentaire libre + case "signalement d'insatisfaction".
+ * - Délègue à ReviewService.create (un seul avis par rendez-vous).
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';

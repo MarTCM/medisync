@@ -1,3 +1,10 @@
+/**
+ * Modèle Review — avis laissé par un patient après un rendez-vous terminé.
+ *
+ * - Un seul avis par rendez-vous (Appointment unique).
+ * - Note de 1 à 5 + commentaire texte facultatif.
+ * - Le drapeau isIssueReport permet de signaler une insatisfaction grave remontée à l'administration.
+ */
 const mongoose = require('mongoose');
 
 const reviewSchema = new mongoose.Schema({

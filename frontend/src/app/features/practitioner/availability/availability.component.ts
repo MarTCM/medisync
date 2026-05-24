@@ -1,3 +1,9 @@
+/**
+ * Composant DoctorAvailabilityComponent — configuration des disponibilités par défaut.
+ *
+ * - Sélection des jours travaillés, plage horaire (HH:mm) et durée standard de consultation (15/30/60 min).
+ * - Persistance via DoctorService.updateMe (schedule).
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';

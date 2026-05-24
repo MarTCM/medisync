@@ -1,3 +1,10 @@
+/**
+ * Composant MyAppointmentsComponent — historique des rendez-vous du patient.
+ *
+ * - Liste paginée avec badges colorés selon le statut (en attente, confirmé, terminé, annulé, no-show).
+ * - Actions disponibles : annuler un RDV à venir, laisser un avis sur un RDV terminé.
+ * - Données récupérées via AppointmentService.getMine.
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';

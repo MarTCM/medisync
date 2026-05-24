@@ -1,3 +1,12 @@
+/**
+ * Service AppointmentService — accès HTTP au cycle de vie des rendez-vous.
+ *
+ * - create / getAll / getMine / getDoctorDaily : création et listings selon le rôle.
+ * - getAvailableSlots : récupère les créneaux libres d'un médecin à une date donnée.
+ * - cancel / reschedule / confirm / markNoShow : transitions d'état du rendez-vous.
+ * - setIndisponibilite : bloc d'indisponibilité côté médecin (patient absent du RDV).
+ * - Plusieurs endpoints retournent un wrapper { appointments: [] } — pensez à déballer .appointments.
+ */
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';

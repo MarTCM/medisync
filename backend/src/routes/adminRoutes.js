@@ -1,3 +1,11 @@
+/**
+ * Routes /api/admin — gestion du personnel et journal d'audit.
+ *
+ * - Toutes les routes sont protégées par JWT (protect) et restreintes à l'administrateur (authorize).
+ * - POST /create-staff valide email/mot de passe/rôle avant délégation à adminController.
+ * - GET /patients est ouvert aussi à la secrétaire pour la gestion de fiches patient.
+ * - GET /audit fournit le journal d'audit paginé pour la consultation de l'administrateur.
+ */
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');

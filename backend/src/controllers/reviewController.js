@@ -1,3 +1,11 @@
+/**
+ * Contrôleur review — collecte des avis patients après consultation.
+ *
+ * - createReview : un patient laisse une note (1-5) et un commentaire pour un RDV terminé.
+ * - Le drapeau isIssueReport distingue un avis ordinaire d'un signalement d'insatisfaction grave
+ *   (remonté à l'administration pour suivi qualité).
+ * - Contrainte d'unicité (un avis par rendez-vous) appliquée au niveau du modèle Mongoose.
+ */
 const Review = require('../models/Review');
 const Appointment = require('../models/Appointment');
 

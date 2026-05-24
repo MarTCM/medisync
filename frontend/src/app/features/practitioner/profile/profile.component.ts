@@ -1,3 +1,9 @@
+/**
+ * Composant DoctorProfileComponent — édition du profil professionnel.
+ *
+ * - Modification des spécialités, langues, lieu, secteur tarifaire et grille d'honoraires.
+ * - Persistance via DoctorService.updateMe.
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';

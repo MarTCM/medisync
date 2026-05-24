@@ -1,3 +1,9 @@
+/**
+ * Composant TwoFactorSetupComponent — configuration de la 2FA TOTP pour l'administrateur.
+ *
+ * - Génère le QR code (AuthService.setup2FA) à scanner avec une appli authenticator.
+ * - Confirme l'activation avec confirmSetup2FA(code) ; permet aussi la désactivation via disable2FA(code).
+ */
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';

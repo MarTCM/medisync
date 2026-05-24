@@ -1,3 +1,11 @@
+/**
+ * Templates HTML des emails transactionnels MediSync.
+ *
+ * - Chaque fonction retourne { subject, html, text } prêt à passer à sendNotification().
+ * - Couvre : confirmation de réservation, modification, confirmation par la secrétaire,
+ *   rappels 24h et 1h avant le rendez-vous, envoi de facture (avec PJ PDF).
+ * - Utilise un shell HTML commun (table-based pour compatibilité clients mail) et getFacilityInfo() pour le branding.
+ */
 const { getFacilityInfo } = require('./emailService');
 
 function fmtDate(d) {

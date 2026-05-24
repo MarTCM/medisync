@@ -1,3 +1,9 @@
+/**
+ * Composant LeavesComponent — gestion des congés et absences du médecin.
+ *
+ * - Liste, ajout (DoctorService.addLeave avec startDate/endDate/reason) et suppression.
+ * - Les congés bloquent automatiquement les créneaux dans le calcul des disponibilités.
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';

@@ -1,3 +1,14 @@
+/**
+ * Contrôleur auth — inscription, connexion, OAuth Google et 2FA TOTP.
+ *
+ * - register / login : authentification classique (bcrypt + JWT). Crée le profil associé selon le rôle.
+ * - googleLogin : vérifie l'idToken Google (OAuth2Client), crée/retrouve le compte ; si profil incomplet,
+ *   renvoie un flag pour rediriger vers /complete-profile côté frontend.
+ * - setup2FA / confirmSetup2FA / verify2FA / disable2FA : flow TOTP via speakeasy
+ *   (génération de secret + QR code, vérification du code à 6 chiffres à la connexion).
+ * - getMe / updatePatientProfile : profil du compte connecté.
+ * - Toutes les connexions sont tracées via logAudit (action CONNEXION).
+ */
 const Account = require('../models/Account');
 const PatientProfile = require('../models/PatientProfile');
 const DoctorProfile = require('../models/DoctorProfile');

@@ -1,3 +1,11 @@
+/**
+ * Middleware upload — gestion des téléversements de documents médicaux (multer).
+ *
+ * - Stockage local dans le dossier uploads/ avec un nom unique (timestamp + aléatoire).
+ * - Filtre de sécurité : seuls les formats PDF, JPG/JPEG, PNG et DICOM (.dcm) sont acceptés.
+ * - Limite de taille fixée à 20 Mo par fichier, conformément au cahier des charges.
+ * - Utilisé par recordRoutes (/upload, /upload/:patientId).
+ */
 const multer = require('multer');
 const path = require('path');
 

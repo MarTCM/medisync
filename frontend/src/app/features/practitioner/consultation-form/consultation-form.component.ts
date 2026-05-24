@@ -1,3 +1,10 @@
+/**
+ * Composant ConsultationFormComponent — dialogue de saisie d'une consultation (médecin).
+ *
+ * - Ouvert depuis le calendrier au clic sur un rendez-vous (MatDialog).
+ * - Permet de rédiger le compte rendu et d'ajouter des prescriptions (médicament, posologie, durée).
+ * - Soumission via RecordService.addConsultation ; bascule le RDV en statut 'terminé'.
+ */
 import { Component, Inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';

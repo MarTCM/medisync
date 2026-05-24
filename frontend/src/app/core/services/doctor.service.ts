@@ -1,3 +1,11 @@
+/**
+ * Service DoctorService — recherche de médecins et gestion du profil médecin.
+ *
+ * - search : utilisé par la vue patient/search-doctors (spécialité, langue, lieu, nom).
+ * - getMe / updateMe : profil du médecin connecté.
+ * - addLeave / listLeaves / removeLeave : gestion des congés et absences exceptionnelles.
+ * - Signature : addLeave attend { startDate, endDate, reason? } (et non start/end).
+ */
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';

@@ -1,3 +1,12 @@
+/**
+ * Contrôleur analytics — KPI et exports de rapports d'activité.
+ *
+ * - kpis : agrège nombre de rendez-vous, chiffre d'affaires, taux de remplissage, etc. sur la période choisie.
+ * - revenueBreakdown : ventilation du chiffre d'affaires par médecin / spécialité / période.
+ * - exportPdf / exportExcel : génère les rapports téléchargeables via PDFKit et ExcelJS.
+ * - Helper parseRange normalise la fenêtre temporelle (jour / semaine / mois / année) depuis la requête.
+ * - Tous les exports sont journalisés par logAudit (action EXPORT_DONNEES).
+ */
 const Appointment = require('../models/Appointment');
 const Invoice = require('../models/Invoice');
 const DoctorProfile = require('../models/DoctorProfile');

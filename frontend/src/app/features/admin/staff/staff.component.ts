@@ -1,3 +1,9 @@
+/**
+ * Composant AdminStaffComponent — CRUD du personnel (médecins et secrétaires).
+ *
+ * - Création de compte avec profil professionnel (spécialités, tarifs, secteur, planning par défaut).
+ * - Liste, édition et suppression — AdminService.createStaff / listStaff / updateStaff / deleteAccount.
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';

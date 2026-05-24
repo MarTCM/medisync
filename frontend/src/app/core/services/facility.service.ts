@@ -1,3 +1,10 @@
+/**
+ * Service FacilityService — configuration de la clinique (singleton).
+ *
+ * - get : lecture des informations (réponse { facility } à déballer).
+ * - upsert : crée ou met à jour le document unique de la clinique (admin uniquement côté backend).
+ * - addRoom / removeRoom : gestion des salles et de leur équipement.
+ */
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';

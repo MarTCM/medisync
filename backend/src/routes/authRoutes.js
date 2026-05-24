@@ -1,3 +1,11 @@
+/**
+ * Routes /api/auth — authentification, OAuth Google et 2FA.
+ *
+ * - POST /register et /login pour l'authentification classique avec validation forte du mot de passe.
+ * - POST /google pour la connexion via idToken Google (google-auth-library) ; nécessite parfois /complete-profile pour les patients.
+ * - GET/PATCH /me retournent et mettent à jour le profil du compte connecté (JWT requis).
+ * - Bloc /2fa/* : setup (génère secret + QR), confirm-setup, verify (à la connexion), disable — basé sur speakeasy (TOTP).
+ */
 const express = require('express');
 const router = express.Router();
 const { body } = require('express-validator');

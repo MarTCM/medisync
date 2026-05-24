@@ -1,3 +1,10 @@
+/**
+ * Composant DoctorCalendarComponent — planning journalier du médecin.
+ *
+ * - Affiche les rendez-vous du jour (AppointmentService.getDoctorDaily) avec navigation par date.
+ * - Au clic, ouvre le dialogue de consultation (ConsultationFormComponent) pour saisir le compte rendu.
+ * - Désabonnements gérés dans ngOnDestroy.
+ */
 import { Component, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule } from '@angular/forms';

@@ -1,3 +1,14 @@
+/**
+ * Contrôleur appointment — gestion complète du cycle de vie des rendez-vous.
+ *
+ * - createAppointment : crée un RDV (résout le PatientProfile depuis req.user pour les patients,
+ *   utilise req.body.patientId pour secrétaire/administrateur). Supporte les ayants droit (dependentId).
+ * - getAvailableSlots : calcule les créneaux libres d'un médecin à partir de ses disponibilités et congés.
+ * - confirmAppointment / cancelAppointment / updateAppointment / markNoShow : transitions d'état.
+ * - setIndisponibilite : permet au médecin de bloquer un créneau (patient = null).
+ * - Helper enrichWithDependent : attache les infos de l'ayant droit aux RDV pour l'affichage frontend.
+ * - Envois d'emails (confirmation, reprogrammation) en fire-and-forget pour ne pas bloquer la réponse HTTP.
+ */
 const Appointment = require('../models/Appointment');
 const PatientProfile = require('../models/PatientProfile');
 const DoctorProfile = require('../models/DoctorProfile');

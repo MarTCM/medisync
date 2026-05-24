@@ -1,3 +1,9 @@
+/**
+ * Composant AdminFacilityComponent — configuration de la clinique.
+ *
+ * - Édition du singleton Facility (nom, adresse, contact, horaires, spécialités).
+ * - Gestion des salles d'examen : ajout (FacilityService.addRoom(roomName, equipment[])) et suppression.
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';

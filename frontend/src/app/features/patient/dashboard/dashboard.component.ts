@@ -1,3 +1,9 @@
+/**
+ * Composant PatientDashboardComponent — page d'accueil du portail patient.
+ *
+ * - Cartes statistiques (prochain RDV, factures en attente, dernier compte rendu).
+ * - Raccourcis vers la recherche de médecins et la prise de rendez-vous.
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';

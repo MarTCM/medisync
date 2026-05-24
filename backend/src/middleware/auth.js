@@ -1,3 +1,11 @@
+/**
+ * Middleware protect — authentification par JWT (Bearer Token).
+ *
+ * - Lit l'en-tête HTTP "Authorization: Bearer <token>" et vérifie sa signature avec JWT_SECRET.
+ * - Charge le compte correspondant (sans le mot de passe) et l'attache à req.user pour les middlewares suivants.
+ * - Retourne 401 si le token est absent, invalide, expiré ou si le compte n'existe plus.
+ * - Doit précéder authorize() pour toute route nécessitant un contrôle de rôle.
+ */
 const jwt = require('jsonwebtoken');
 const Account = require('../models/Account');
 

@@ -1,3 +1,9 @@
+/**
+ * Coquille (shell) du portail patient.
+ *
+ * - Layout parent des routes /patient/* (barre latérale + zone de contenu router-outlet).
+ * - Liens vers dashboard, search, book, appointments, record, invoices, review, profile.
+ */
 import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';

@@ -1,3 +1,9 @@
+/**
+ * Composant TwoFactorComponent — saisie du code TOTP après connexion.
+ *
+ * - Affiché uniquement quand AuthService.login retourne un tempToken (2FA activée).
+ * - Délègue à AuthService.verify2FA(tempToken, code) ; en succès, persiste la session définitive et redirige.
+ */
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
