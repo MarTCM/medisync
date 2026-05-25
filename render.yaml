@@ -1,0 +1,26 @@
+services:
+  - type: web
+    name: medisync
+    runtime: node
+    rootDir: .
+    buildCommand: bash render-build.sh
+    startCommand: node backend/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: MONGO_URI
+        sync: false          # set manually in Render dashboard (MongoDB Atlas URL)
+      - key: JWT_SECRET
+        sync: false          # set manually — use a strong random value in prod
+      - key: JWT_EXPIRES_IN
+        value: 1d
+      - key: RESEND_API_KEY
+        sync: false          # set manually
+      - key: EMAIL_FROM
+        sync: false          # e.g. MediSync <no-reply@yourdomain.com>
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false          # your Google Client ID
+      - key: FRONTEND_URL
+        sync: false          # will be your Render app URL, e.g. https://medisync.onrender.com

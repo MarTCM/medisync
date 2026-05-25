@@ -64,10 +64,20 @@ app.use('/api/invoices', invoiceRoutes);
 app.use('/api/facility', facilityRoutes);
 app.use('/api/analytics', analyticsRoutes);
 
-// 404 handler
-app.use((_req, res) => {
-  res.status(404).json({ message: 'Route non trouvée' });
-});
+// Serve Angular SPA in production (built files copied next to server.js)
+const angularDist = path.join(__dirname, 'public');
+if (process.env.NODE_ENV === 'production' && fs.existsSync(angularDist)) {
+  app.use(express.static(angularDist));
+  // All non-API routes → Angular index.html (client-side routing)
+  app.get('*', (_req, res) => {
+    res.sendFile(path.join(angularDist, 'index.html'));
+  });
+} else {
+  // 404 handler (dev mode)
+  app.use((_req, res) => {
+    res.status(404).json({ message: 'Route non trouvée' });
+  });
+}
 
 // Global error handler
 app.use((err, req, res, next) => {
