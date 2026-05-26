@@ -1083,7 +1083,221 @@ ng build --configuration=production
 \end{lstlisting}
 
 % ============================================================
-%  CHAPITRE 8 — FONCTIONNALITÉS DÉTAILLÉES PAR RÔLE
+%  CHAPITRE 8 — DÉPLOIEMENT SUR RENDER
+% ============================================================
+\chapter{Déploiement sur Render}
+
+MediSync est conçu pour être déployé en tant que \textbf{service web unique} sur la plateforme \href{https://render.com}{Render}. Le backend Express sert à la fois l'API REST (\texttt{/api/*}) et les fichiers statiques de l'application Angular compilée, ce qui évite la mise en place de deux services distincts et résout d'office les problèmes CORS.
+
+\section{Architecture du Déploiement}
+
+\begin{center}
+\begin{tikzpicture}[
+  box/.style={
+    draw=MedTeal, fill=MedTealLight, rounded corners=5pt,
+    minimum width=4cm, minimum height=0.85cm,
+    align=center, font=\small\bfseries\color{MedTealDark}
+  },
+  extbox/.style={
+    draw=BorderGray, fill=LightGray, rounded corners=5pt,
+    minimum width=3.5cm, minimum height=0.75cm,
+    align=center, font=\small\color{CommentGray}
+  },
+  arr/.style={-Latex, thick, MedTeal},
+  darr/.style={-Latex, thick, dashed, BorderGray},
+  lbl/.style={font=\footnotesize\itshape, text=CommentGray, fill=white,
+              inner sep=1pt}
+]
+  \node[box] (user)   at (0,0)    {Utilisateur (HTTPS)};
+  \node[box] (render) at (0,-1.8) {Render Web Service\\{\footnotesize Express + Angular build}};
+  \node[extbox] (atlas)  at (-4.5,-3.6) {MongoDB Atlas};
+  \node[extbox] (resend) at (0,-3.6)    {Resend (e-mail)};
+  \node[extbox] (google) at (4.5,-3.6)  {Google OAuth};
+
+  \draw[arr]  (user)   -- node[lbl,right]{TLS} (render);
+  \draw[darr] (render) -- node[lbl,left]{Mongoose} (atlas);
+  \draw[darr] (render) -- node[lbl,right]{HTTPS} (resend);
+  \draw[darr] (render) -- node[lbl,right]{idToken} (google);
+\end{tikzpicture}
+\end{center}
+
+\section{Prérequis}
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item Un compte \textbf{Render} (\texttt{https://render.com}) connecté à GitHub.
+  \item Un cluster \textbf{MongoDB Atlas} avec un utilisateur et une chaîne de connexion (\texttt{mongodb+srv://...}).
+  \item Une clé API \textbf{Resend} pour les e-mails transactionnels (optionnel).
+  \item Un \textbf{Google OAuth Client ID} configuré pour l'URL Render finale (optionnel).
+\end{itemize}
+
+\section{Fichiers de Déploiement}
+
+Deux fichiers à la racine du dépôt pilotent le déploiement :
+
+\subsection{\texttt{render.yaml} (Blueprint Infrastructure-as-Code)}
+
+\begin{lstlisting}[style=bash]
+services:
+  - type: web
+    name: medisync
+    runtime: node
+    rootDir: .
+    buildCommand: bash render-build.sh
+    startCommand: node backend/server.js
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: MONGO_URI
+        sync: false   # MongoDB Atlas URL
+      - key: JWT_SECRET
+        sync: false   # chaine aleatoire forte
+      - key: JWT_EXPIRES_IN
+        value: 1d
+      - key: RESEND_API_KEY
+        sync: false
+      - key: EMAIL_FROM
+        sync: false   # MediSync <no-reply@domain.com>
+      - key: GOOGLE_OAUTH_CLIENT_ID
+        sync: false
+      - key: FRONTEND_URL
+        sync: false   # https://medisync.onrender.com
+\end{lstlisting}
+
+\subsection{\texttt{render-build.sh} (script de build)}
+
+Ce script est exécuté par Render à chaque déploiement. Il enchaîne :
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item \texttt{npm ci} dans \texttt{frontend/} pour installer les dépendances Angular.
+  \item \texttt{npx ng build --configuration production} pour compiler le SPA.
+  \item Copie du build (\texttt{frontend/dist/frontend/browser/}) vers \texttt{backend/public/}, dossier servi en statique par Express.
+  \item \texttt{npm ci} dans \texttt{backend/} pour installer les dépendances Node.
+  \item \texttt{node seed.js} pour amorcer la base avec les comptes de démonstration.
+\end{enumerate}
+
+\begin{warnbox}[title=Seed en production]
+  Le script \texttt{seed.js} est exécuté à chaque build. En environnement de démo c'est volontaire (réinitialisation des comptes), mais en production réelle il faut le retirer pour éviter d'écraser les données.
+\end{warnbox}
+
+\section{Étapes de Déploiement}
+
+\subsection{Étape 1 — Préparer MongoDB Atlas}
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item Créer un cluster gratuit M0 sur \texttt{cloud.mongodb.com}.
+  \item Ajouter un utilisateur de base de données (\texttt{Database Access}).
+  \item Autoriser l'accès depuis n'importe quelle IP (\texttt{Network Access $\rightarrow$ 0.0.0.0/0}), Render n'exposant pas d'IP statique sur le plan gratuit.
+  \item Récupérer la chaîne de connexion : \texttt{mongodb+srv://<user>:<pwd>@cluster.xxx.mongodb.net/medisync}
+\end{enumerate}
+
+\subsection{Étape 2 — Créer le service Render}
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item Sur le tableau de bord Render, cliquer sur \textbf{New $\rightarrow$ Blueprint}.
+  \item Sélectionner le dépôt GitHub \texttt{medisync}. Render détecte automatiquement \texttt{render.yaml} et propose la création du service.
+  \item Valider la création — le service est nommé \texttt{medisync} et utilise le runtime Node.
+\end{enumerate}
+
+\subsection{Étape 3 — Configurer les variables d'environnement}
+
+Dans l'onglet \texttt{Environment} du service, renseigner les valeurs marquées \texttt{sync: false} :
+
+\begin{center}
+\small
+\begin{tabularx}{\textwidth}{@{} l X @{}}
+  \toprule
+  \textbf{Variable} & \textbf{Valeur} \\
+  \midrule
+  \texttt{MONGO\_URI}              & Chaîne de connexion Atlas obtenue à l'étape 1. \\
+  \texttt{JWT\_SECRET}             & Chaîne aléatoire forte ($\geq$ 32 caractères). Générer avec \texttt{openssl rand -base64 48}. \\
+  \texttt{RESEND\_API\_KEY}        & Clé API Resend (\texttt{re\_xxxx}), ou laisser vide pour désactiver les e-mails. \\
+  \texttt{EMAIL\_FROM}             & Ex. : \texttt{MediSync <no-reply@yourdomain.com>}. \\
+  \texttt{GOOGLE\_OAUTH\_CLIENT\_ID}& Client ID OAuth Google, ou laisser vide. \\
+  \texttt{FRONTEND\_URL}           & URL publique du service Render (ex. : \texttt{https://medisync.onrender.com}). \\
+  \bottomrule
+\end{tabularx}
+\end{center}
+
+\begin{infobox}[title=URL Render]
+  Render attribue automatiquement une URL au format \texttt{https://<nom-service>.onrender.com}. Il faut renseigner cette URL dans \texttt{FRONTEND\_URL} \textbf{après} le premier déploiement, puis relancer un build pour que la configuration CORS soit correcte.
+\end{infobox}
+
+\subsection{Étape 4 — Configurer Google OAuth (optionnel)}
+
+Si Google OAuth est activé :
+
+\begin{enumerate}[leftmargin=*,itemsep=2pt]
+  \item Sur la \textbf{Google Cloud Console} ($\rightarrow$ \textit{Credentials}), éditer le client OAuth.
+  \item Ajouter l'URL Render à \textit{Authorized JavaScript origins} : \texttt{https://medisync.onrender.com}
+  \item Ajouter \texttt{https://medisync.onrender.com} à \textit{Authorized redirect URIs}.
+\end{enumerate}
+
+\subsection{Étape 5 — Lancer le déploiement}
+
+Render déclenche un build automatique au premier déploiement et à chaque \texttt{git push} sur la branche \texttt{main}. Le journal de build est visible en temps réel dans l'onglet \textit{Logs}.
+
+\begin{lstlisting}[style=bash]
+==> Installing frontend dependencies...
+==> Building Angular for production...
+==> Copying Angular build to backend/public...
+==> Installing backend dependencies...
+==> Seeding database with demo data...
+==> Build complete.
+==> Starting service with 'node backend/server.js'
+\end{lstlisting}
+
+\subsection{Étape 6 — Vérifier le déploiement}
+
+Une fois le service en état \textbf{Live}, vérifier dans l'ordre :
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item \texttt{https://<service>.onrender.com/health} retourne \texttt{\{ status: "ok" \}}.
+  \item La racine \texttt{https://<service>.onrender.com/} affiche le SPA Angular.
+  \item Connexion avec un compte de démonstration (\texttt{admin@medisync.demo} / \texttt{Demo1234!}).
+\end{itemize}
+
+\section{Sert le Frontend depuis Express}
+
+Pour que le backend serve le build Angular, \texttt{server.js} expose \texttt{backend/public/} en statique et intercepte les routes non-API pour retourner \texttt{index.html} (afin de supporter le routing client) :
+
+\begin{lstlisting}[style=code, language=]
+app.use(express.static(path.join(__dirname, 'public')));
+
+app.get('*', (req, res, next) => {
+  if (req.path.startsWith('/api')) return next();
+  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+});
+\end{lstlisting}
+
+\section{Configuration Angular pour la Production}
+
+Le fichier \texttt{frontend/src/environments/environment.prod.ts} doit pointer vers une URL d'API \textbf{relative} pour fonctionner sur le même domaine que le backend :
+
+\begin{lstlisting}[style=code, language=]
+export const environment = {
+  production: true,
+  apiUrl: '/api'
+};
+\end{lstlisting}
+
+L'option \texttt{fileReplacements} de \texttt{angular.json} substitue automatiquement ce fichier lors du build production.
+
+\section{Plan Gratuit — Limitations}
+
+\begin{itemize}[leftmargin=*,itemsep=2pt]
+  \item \textbf{Veille après 15 minutes d'inactivité} : la première requête après veille subit un cold start de 30 à 60 secondes.
+  \item \textbf{750 heures/mois} d'exécution — suffisant pour un service unique.
+  \item \textbf{Pas de disque persistant} — les fichiers téléversés dans \texttt{uploads/} sont perdus à chaque redéploiement. Pour la production réelle, utiliser un stockage externe (S3, Cloudinary) ou un \textit{disk} Render payant.
+\end{itemize}
+
+\section{Déploiements Successifs}
+
+Tout \texttt{git push} sur la branche \texttt{main} déclenche un nouveau build automatiquement (\textit{Auto-Deploy} activé par défaut). En cas d'échec, Render conserve la version précédente en ligne. L'historique des déploiements et la possibilité de \textit{rollback} sont accessibles dans l'onglet \textit{Events}.
+
+% ============================================================
+%  CHAPITRE 9 — FONCTIONNALITÉS DÉTAILLÉES PAR RÔLE
 % ============================================================
 \chapter{Fonctionnalités Détaillées par Rôle}
 
