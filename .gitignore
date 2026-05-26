@@ -18,3 +18,4 @@ backend/uploads/
 *.swp
 .idea/
 .vscode/settings.json
+.claude
