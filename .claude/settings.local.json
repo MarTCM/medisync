@@ -63,7 +63,16 @@
       "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\({'dependencies': d.get\\('dependencies',{}\\), 'devDependencies': d.get\\('devDependencies',{}\\)}, indent=2\\)\\)\")",
       "Bash(pdflatex --version)",
       "Bash(grep -E \"\\\\.\\(ts|model|service\\)\\\\.ts$\")",
-      "Bash(npm run *)"
+      "Bash(npm run *)",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('Frontend:', d.get\\('name'\\), '\\\\nScripts:', list\\(d.get\\('scripts',{}\\).keys\\(\\)\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('Backend:', d.get\\('name'\\), '\\\\nScripts:', list\\(d.get\\('scripts',{}\\).keys\\(\\)\\), '\\\\nMain:', d.get\\('main',''\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\(json.dumps\\(d.get\\('dependencies',{}\\), indent=2\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); build=d['projects']['frontend']['architect']['build']; print\\('Output path:', build.get\\('options',{}\\).get\\('outputPath',''\\)\\)\")",
+      "Bash(python3 -c \"import json,sys; d=json.load\\(sys.stdin\\); print\\('Node engine:', d.get\\('engines', 'not set'\\)\\)\")",
+      "Bash(npm --version)",
+      "Bash(chmod +x /home/martcm/Desktop/Dev/Angular/medisync/render-build.sh)",
+      "Bash(bash render-build.sh)",
+      "Bash(python3 -c ' *)"
     ]
   }
 }
